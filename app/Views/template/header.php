@@ -4,13 +4,40 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= esc($title ?? 'ITE311 Project') ?></title>
+
+    <!-- Bootstrap + Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <style>
+        #notif-count {
+            font-size: 0.75rem;
+            padding: 3px 6px;
+            border-radius: 50%;
+            position: relative;
+            top: -8px;
+            right: 5px;
+        }
+        .dropdown-menu {
+            max-height: 300px;
+            overflow-y: auto;
+            width: 320px;
+        }
+        .notification-item {
+            font-size: 0.9rem;
+            word-wrap: break-word;
+        }
+    </style>
 </head>
 <body>
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-success">
     <div class="container-fluid">
         <a class="navbar-brand" href="/dashboard">ITE311 System</a>
+      
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -18,7 +45,7 @@
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav me-auto">
 
-                <!-- Show for all logged-in users -->
+                <!-- Common links -->
                 <li class="nav-item">
                     <a class="nav-link" href="/dashboard">Dashboard</a>
                 </li>
@@ -44,7 +71,21 @@
             </ul>
 
             <ul class="navbar-nav ms-auto">
+
                 <?php if (session()->get('isLoggedIn')): ?>
+                    
+                    <!-- 🔔 Notification Bell -->
+                <li class="nav-item dropdown me-3" id="notifDropdown">
+                     <a class="nav-link dropdown-toggle position-relative" href="#" role="button" data-bs-toggle="dropdown">
+                         <i class="bi bi-bell-fill"></i>
+                         <span id="notif-count" class="badge bg-danger"></span>
+                     </a>
+                    
+                        <ul class="dropdown-menu dropdown-menu-end" id="notif-list">
+                            <li><p class="text-center text-muted m-2">Loading notifications...</p></li>
+                        </ul>
+                    </li>
+
                     <li class="nav-item">
                         <span class="navbar-text text-light me-2">
                             <?= esc(session()->get('email')) ?> (<?= esc(session()->get('role')) ?>)
@@ -53,6 +94,7 @@
                     <li class="nav-item">
                         <a class="nav-link btn btn-danger btn-sm text-white" href="/logout">Logout</a>
                     </li>
+
                 <?php else: ?>
                     <li class="nav-item">
                         <a class="nav-link" href="/login">Login</a>
@@ -64,3 +106,74 @@
 </nav>
 
 <div class="container mt-4">
+
+<!-- 🧠 Notifications Script -->
+<script>
+$(document).ready(function() {
+     
+
+    function loadNotifications() {
+        $.get("<?= base_url('notifications'); ?>", function(data) {
+            if (!data || typeof data !== "object") {
+                console.error("Invalid data from server:", data);
+                return;
+            }
+
+            // Update count badge
+            if (data.count > 0) {
+                $("#notif-count").text(data.count).show();
+            } else {
+                $("#notif-count").hide();
+            }
+
+            // Build list
+            let html = '';
+            if (data.notifications.length === 0) {
+                html = '<li><p class="text-center text-muted m-2">No new notifications</p></li>';
+            } else {
+                data.notifications.forEach(n => {
+                    const readClass = n.is_read == 1 ? 'text-muted' : 'fw-bold';
+                    html += `
+                        <li class="dropdown-item d-flex justify-content-between align-items-start ${readClass}">
+                            <div class="notification-item text-wrap">${n.message}</div>
+                            ${n.is_read == 0 ? `<button class="btn btn-sm btn-outline-success mark-read" data-id="${n.id}">✓</button>` : ''}
+                        </li>
+                    `;
+                });
+            }
+
+            $("#notif-list").html(html);
+        }).fail(function(xhr) {
+            console.error("Notification fetch failed:", xhr.responseText);
+            $("#notif-list").html('<li><p class="text-center text-danger m-2">Failed to load notifications</p></li>');
+        });
+    }
+
+    // Mark notification as read
+    $(document).on("click", ".mark-read", function() {
+        const id = $(this).data("id");
+        $.post("<?= base_url('notifications/mark_read/'); ?>" + id, function(res) {
+            if (res.success) loadNotifications();
+        }).fail(function(xhr) {
+            console.error("Mark as read failed:", xhr.responseText);
+        });
+    });
+
+    // Load notifications when dropdown is shown (on click)
+    $('#notifDropdown').on('show.bs.dropdown', function () {
+        loadNotifications();
+    });
+
+  
+    setInterval(function() {
+        $.get("<?= base_url('notifications'); ?>", function(data) {
+            if (data && typeof data === "object" && data.count > 0) {
+                $("#notif-count").text(data.count).show();
+            } else if (data && data.count === 0) {
+                $("#notif-count").hide();
+            }
+        });
+    }, 60000);
+});
+</script>
+

@@ -9,6 +9,8 @@ use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
 use Psr\Log\LoggerInterface;
 
+use App\Models\NotificationModel;
+
 /**
  * Class BaseController
  *
@@ -29,30 +31,55 @@ abstract class BaseController extends Controller
     protected $request;
 
     /**
-     * An array of helpers to be loaded automatically upon
-     * class instantiation. These helpers will be available
-     * to all other controllers that extend BaseController.
-     *
+     * Array of helpers to load automatically upon instantiation.
      * @var list<string>
      */
     protected $helpers = [];
 
     /**
-     * Be sure to declare properties for any property fetch you initialized.
-     * The creation of dynamic property is deprecated in PHP 8.2.
+     * Session instance
+     * @var \CodeIgniter\Session\Session
      */
-    // protected $session;
+    protected $session;
 
     /**
-     * @return void
+     * Initialize controller
      */
     public function initController(RequestInterface $request, ResponseInterface $response, LoggerInterface $logger)
     {
         // Do Not Edit This Line
         parent::initController($request, $response, $logger);
 
-        // Preload any models, libraries, etc, here.
+        // Load session service
+        $this->session = service('session');
 
-        // E.g.: $this->session = service('session');
+        // You can preload models/libraries here if needed
+        // Example: $this->userModel = new \App\Models\UserModel();
+    }
+
+    /**
+     * Loads notifications for the current logged-in user.
+     *
+     * @return array
+     */
+    protected function loadNotifications(): array
+    {
+        $userId = $this->session->get('user_id');
+
+        if ($userId) {
+            $notificationModel = new NotificationModel();
+            $unreadCount = $notificationModel->getUnreadCount($userId);
+            $notifications = $notificationModel->getNotificationsForUser($userId);
+
+            return [
+                'unreadCount'   => $unreadCount,
+                'notifications' => $notifications,
+            ];
+        }
+
+        return [
+            'unreadCount'   => 0,
+            'notifications' => [],
+        ];
     }
 }

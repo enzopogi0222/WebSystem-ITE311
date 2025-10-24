@@ -65,6 +65,13 @@ class Course extends BaseController
             // Attempt enrollment
             if ($enrollmentModel->enrollUser($data)) {
                 log_message('info', 'User ' . $userId . ' successfully enrolled in course ' . $courseId);
+
+                // Create notification for enrollment
+                $notificationModel = new \App\Models\NotificationModel();
+                $courseTitle = $course->title; // Assuming $course has title
+                $message = "You have successfully enrolled in the course: {$courseTitle}";
+                $notificationModel->createNotification($userId, $message);
+
                 return $this->response->setJSON(['success' => true, 'message' => 'Successfully enrolled in the course']);
             } else {
                 log_message('error', 'Failed to enroll user ' . $userId . ' in course ' . $courseId);
