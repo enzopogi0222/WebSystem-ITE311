@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Controllers\BaseController;
 use App\Models\EnrollmentModel;
+use App\Models\CourseModel;
 
 class Course extends BaseController
 {
@@ -82,5 +83,24 @@ class Course extends BaseController
             log_message('error', 'Enrollment error: ' . $e->getMessage());
             return $this->response->setJSON(['success' => false, 'message' => 'Server error: ' . $e->getMessage()])->setStatusCode(500);
         }
+    }
+
+    public function search()
+    {
+        $searchTerm   = $this->request->getGet('search_term');
+        $courseModel  = new CourseModel();
+
+        if (!empty($searchTerm)) {
+            $courseModel->like('title', $searchTerm);
+            $courseModel->orLike('description', $searchTerm);
+        }
+
+        $courses = $courseModel->findAll();
+
+        if ($this->request->isAJAX()) {
+            return $this->response->setJSON($courses);
+        }
+
+        return view('courses/index', ['courses' => $courses, 'searchTerm' => $searchTerm, ]);
     }
 }

@@ -24,6 +24,8 @@ $routes->get('/admin/dashboard', 'Admin::dashboard');
 $routes->get('/teacher/dashboard', 'Teacher::dashboard');
 $routes->get('/student/dashboard', 'Students::dashboard');
 $routes->post('/course/enroll', 'Course::enroll');
+$routes->get('/courses/search', 'Course::search');
+$routes->post('/courses/search', 'Course::search');
 
 $routes->get('/admin/course/(:num)/upload', 'Materials::upload/$1');
 $routes->post('/admin/course/(:num)/upload', 'Materials::upload/$1');
