@@ -46,41 +46,30 @@
       </div>
       <div class="card-body">
         <p class="text-muted mb-3">Manage course materials and uploads</p>
-        <div class="row">
-          <div class="col-md-4 mb-2">
-            <a href="/materials/course/1" class="btn btn-outline-success btn-sm w-100">
-              <i class="fas fa-book me-2"></i>Course 1 Materials
-            </a>
+
+        <?php if (!empty($courses) && is_array($courses)): ?>
+          <div class="row">
+            <?php foreach ($courses as $course): ?>
+              <div class="col-md-4 mb-2">
+                <a href="/materials/course/<?= esc($course['id']) ?>" class="btn btn-outline-success btn-sm w-100">
+                  <i class="fas fa-book me-2"></i><?= esc($course['title'] ?? 'Course Materials') ?>
+                </a>
+              </div>
+            <?php endforeach; ?>
           </div>
-          <div class="col-md-4 mb-2">
-            <a href="/materials/course/2" class="btn btn-outline-success btn-sm w-100">
-              <i class="fas fa-book me-2"></i>Course 2 Materials
-            </a>
+          <hr>
+          <div class="row">
+            <?php foreach ($courses as $course): ?>
+              <div class="col-md-4 mb-2">
+                <a href="/materials/upload/<?= esc($course['id']) ?>" class="btn btn-success btn-sm w-100">
+                  <i class="fas fa-upload me-2"></i>Upload to <?= esc($course['title'] ?? 'Course') ?>
+                </a>
+              </div>
+            <?php endforeach; ?>
           </div>
-          <div class="col-md-4 mb-2">
-            <a href="/materials/course/3" class="btn btn-outline-success btn-sm w-100">
-              <i class="fas fa-book me-2"></i>Course 3 Materials
-            </a>
-          </div>
-        </div>
-        <hr>
-        <div class="row">
-          <div class="col-md-4 mb-2">
-            <a href="/materials/upload/1" class="btn btn-success btn-sm w-100">
-              <i class="fas fa-upload me-2"></i>Upload to Course 1
-            </a>
-          </div>
-          <div class="col-md-4 mb-2">
-            <a href="/materials/upload/2" class="btn btn-success btn-sm w-100">
-              <i class="fas fa-upload me-2"></i>Upload to Course 2
-            </a>
-          </div>
-          <div class="col-md-4 mb-2">
-            <a href="/materials/upload/3" class="btn btn-success btn-sm w-100">
-              <i class="fas fa-upload me-2"></i>Upload to Course 3
-            </a>
-          </div>
-        </div>
+        <?php else: ?>
+          <p class="text-muted mb-0">No courses found. Please add courses first from the admin panel.</p>
+        <?php endif; ?>
       </div>
     </div>
 
@@ -94,9 +83,9 @@
       <div class="card-body">
         <?php if (!empty($courses) && is_array($courses)): ?>
           <ul class="list-group list-group-flush">
-            <?php foreach ($courses as $c): ?>
+            <?php foreach ($courses as $course): ?>
               <li class="list-group-item">
-                <i class="bi bi-book me-2 text-success"></i><?= esc($c) ?>
+                <i class="bi bi-book me-2 text-success"></i><?= esc($course['title'] ?? 'Course') ?>
               </li>
             <?php endforeach; ?>
           </ul>
@@ -114,41 +103,29 @@
       </div>
       <div class="card-body">
         <p class="text-muted mb-3">Manage and upload materials for your courses</p>
-        <div class="row">
-          <div class="col-md-4 mb-2">
-            <a href="/materials/course/1" class="btn btn-outline-success btn-sm w-100">
-              <i class="fas fa-eye me-2"></i>View Course 1 Materials
-            </a>
+        <?php if (!empty($courses) && is_array($courses)): ?>
+          <div class="row">
+            <?php foreach ($courses as $course): ?>
+              <div class="col-md-4 mb-2">
+                <a href="/materials/course/<?= esc($course['id']) ?>" class="btn btn-outline-success btn-sm w-100">
+                  <i class="fas fa-eye me-2"></i>View <?= esc($course['title'] ?? 'Course') ?> Materials
+                </a>
+              </div>
+            <?php endforeach; ?>
           </div>
-          <div class="col-md-4 mb-2">
-            <a href="/materials/course/2" class="btn btn-outline-success btn-sm w-100">
-              <i class="fas fa-eye me-2"></i>View Course 2 Materials
-            </a>
+          <hr>
+          <div class="row">
+            <?php foreach ($courses as $course): ?>
+              <div class="col-md-4 mb-2">
+                <a href="/materials/upload/<?= esc($course['id']) ?>" class="btn btn-success btn-sm w-100">
+                  <i class="fas fa-upload me-2"></i>Upload to <?= esc($course['title'] ?? 'Course') ?>
+                </a>
+              </div>
+            <?php endforeach; ?>
           </div>
-          <div class="col-md-4 mb-2">
-            <a href="/materials/course/3" class="btn btn-outline-success btn-sm w-100">
-              <i class="fas fa-eye me-2"></i>View Course 3 Materials
-            </a>
-          </div>
-        </div>
-        <hr>
-        <div class="row">
-          <div class="col-md-4 mb-2">
-            <a href="/materials/upload/1" class="btn btn-success btn-sm w-100">
-              <i class="fas fa-upload me-2"></i>Upload to Course 1
-            </a>
-          </div>
-          <div class="col-md-4 mb-2">
-            <a href="/materials/upload/2" class="btn btn-success btn-sm w-100">
-              <i class="fas fa-upload me-2"></i>Upload to Course 2
-            </a>
-          </div>
-          <div class="col-md-4 mb-2">
-            <a href="/materials/upload/3" class="btn btn-success btn-sm w-100">
-              <i class="fas fa-upload me-2"></i>Upload to Course 3
-            </a>
-          </div>
-        </div>
+        <?php else: ?>
+          <p class="text-muted mb-0">No courses found. Please contact the administrator to assign or create courses.</p>
+        <?php endif; ?>
       </div>
     </div>
 
@@ -210,24 +187,7 @@
         <?php else: ?>
           <div class="text-center py-3">
             <i class="fas fa-info-circle fa-2x text-muted mb-2"></i>
-            <p class="text-muted mb-3">Enroll in courses to access their materials</p>
-            <div class="row">
-              <div class="col-md-4 mb-2">
-                <a href="/materials/course/1" class="btn btn-outline-success btn-sm w-100">
-                  <i class="fas fa-eye me-2"></i>Sample Course 1
-                </a>
-              </div>
-              <div class="col-md-4 mb-2">
-                <a href="/materials/course/2" class="btn btn-outline-success btn-sm w-100">
-                  <i class="fas fa-eye me-2"></i>Sample Course 2
-                </a>
-              </div>
-              <div class="col-md-4 mb-2">
-                <a href="/materials/course/3" class="btn btn-outline-success btn-sm w-100">
-                  <i class="fas fa-eye me-2"></i>Sample Course 3
-                </a>
-              </div>
-            </div>
+            <p class="text-muted mb-0">Enroll in courses to access their materials.</p>
           </div>
         <?php endif; ?>
       </div>
