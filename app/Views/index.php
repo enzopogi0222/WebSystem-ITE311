@@ -19,6 +19,9 @@
                         <a class="nav-link" href="<?= base_url('home') ?>">Home</a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link" href="<?= base_url('courses/search') ?>">Courses</a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link" href="<?= base_url('about') ?>">About</a>
                     </li>
                     <li class="nav-item">
@@ -28,9 +31,6 @@
                 <ul class="navbar-nav">
                     <li class="nav-item">
                        <a class="nav-link" href="<?= base_url('login') ?>">Login</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="<?= base_url('register') ?>">Register</a>
                     </li>
                 </ul>
             </div>

@@ -134,11 +134,6 @@
                                 </button>
                             </div>
                         </form>
-
-                        <div class="text-center mt-3">
-                            <p>Already have an account? 
-                                <a href="<?= base_url('/login') ?>" class="text-decoration-none">Login here</a>
-                            </p>
                         </div>
                     </div>
                 </div>

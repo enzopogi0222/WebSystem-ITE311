@@ -19,10 +19,17 @@ $routes->get('login', 'Auth::login');
 $routes->post('login', 'Auth::login');
 $routes->get('logout', 'Auth::logout');
 
-$routes->get('dashboard', 'Auth::dashboard');
-$routes->get('/admin/dashboard', 'Admin::dashboard');
-$routes->get('/teacher/dashboard', 'Teacher::dashboard');
-$routes->get('/student/dashboard', 'Students::dashboard');
+$routes->get('/dashboard', 'Auth::dashboard');
+
+// Admin Routes
+$routes->get('admin/users', 'Admin::users');                       
+$routes->get('admin/users/create', 'Admin::createUser');          
+$routes->post('admin/users/store', 'Admin::storeUser');           
+$routes->get('admin/users/edit/(:num)', 'Admin::editUser/$1');     
+$routes->post('admin/users/update/(:num)', 'Admin::updateUser/$1');
+$routes->get('admin/users/delete/(:num)', 'Admin::deleteUser/$1'); 
+$routes->post('admin/users/role/(:num)', 'Admin::changeRole/$1');  
+
 $routes->post('/course/enroll', 'Course::enroll');
 $routes->get('/courses/search', 'Course::search');
 $routes->post('/courses/search', 'Course::search');

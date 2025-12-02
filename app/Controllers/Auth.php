@@ -9,9 +9,15 @@ class Auth extends BaseController
     public function register()
     {
         $session = session();
-        
-        // If user is already logged in, redirect to dashboard
-        if ($session->get('userID')) {
+
+        // Only logged-in admins can access registration
+        if (!$session->get('userID') || !$session->get('isLoggedIn')) {
+            $session->setFlashdata('error', 'Only admins can access the registration page.');
+            return redirect()->to('/login');
+        }
+
+        if ($session->get('role') !== 'admin') {
+            $session->setFlashdata('error', 'You do not have permission to create users.');
             return redirect()->to('/dashboard');
         }
 
@@ -47,8 +53,8 @@ class Auth extends BaseController
             $db = \Config\Database::connect();
             $builder = $db->table('users');
             if ($builder->insert($data)) {
-                $session->setFlashdata('success', 'Registration successful! Please login.');
-                return redirect()->to('/login');
+                $session->setFlashdata('success', 'User account created successfully.');
+                return redirect()->to('/admin/users');
             } else {
                 $session->setFlashdata('error', 'Registration failed. Please try again.');
             }
@@ -94,20 +100,8 @@ class Auth extends BaseController
                     'isLoggedIn' => true
                 ]);
 
-
-            switch ($user['role']) {
-                    case 'admin':
-                        return redirect()->to('/admin/dashboard');
-                    case 'teacher':
-                        return redirect()->to('/teacher/dashboard');
-                    case 'student':
-                        return redirect()->to('/student/dashboard');
-                    default:
-                        // Unknown role: clear session and go back to login
-                        session()->destroy();
-                        session()->setFlashdata('error', 'Your account role is not recognized.');
-                        return redirect()->to(base_url('/login'));
-                }
+                // Single generic dashboard for all roles
+                return redirect()->to('/dashboard');
             } else {
                 $session->setFlashdata('error', 'Invalid email or password.');
                 return view('auth/login');

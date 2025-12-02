@@ -52,7 +52,7 @@
 
                 <?php if (session()->get('role') === 'admin'): ?>
                     <li class="nav-item">
-                        <a class="nav-link" href="/manage-users">Manage Users</a>
+                        <a class="nav-link" href="<?= base_url('admin/users') ?>">Manage Users</a>
                     </li>
                 <?php endif; ?>
 

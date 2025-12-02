@@ -16,7 +16,10 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="<?= base_url('home') ?>">Home</a>
+                        <a class="nav-link" href="<?= base_url('/') ?>">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="<?= base_url('courses/search') ?>">Courses</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="<?= base_url('about') ?>">About</a>
@@ -28,9 +31,6 @@
                 <ul class="navbar-nav">
                     <li class="nav-item">
                        <a class="nav-link" href="<?= base_url('login') ?>">Login</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="<?= base_url('register') ?>">Register</a>
                     </li>
                 </ul>
             </div>
