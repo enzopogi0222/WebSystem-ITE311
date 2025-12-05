@@ -72,8 +72,8 @@ class Course extends BaseController
         $endDate      = $this->request->getPost('end_date');
 
         $errors = [];
-        if (!empty($startingDate) && substr($startingDate, 0, 10) <= $today) {
-            $errors['starting_date'] = 'Start date must be after today.';
+        if (!empty($startingDate) && substr($startingDate, 0, 10) < $today) {
+            $errors['starting_date'] = 'Start date must not be in the past.';
         }
         if (!empty($endDate) && substr($endDate, 0, 10) <= $today) {
             $errors['end_date'] = 'End date must be after today.';
@@ -145,8 +145,8 @@ class Course extends BaseController
         $endDate      = $this->request->getPost('end_date');
 
         $errors = [];
-        if (!empty($startingDate) && substr($startingDate, 0, 10) <= $today) {
-            $errors['starting_date'] = 'Start date must be after today.';
+        if (!empty($startingDate) && substr($startingDate, 0, 10) < $today) {
+            $errors['starting_date'] = 'Start date must not be in the past.';
         }
         if (!empty($endDate) && substr($endDate, 0, 10) <= $today) {
             $errors['end_date'] = 'End date must be after today.';
@@ -209,7 +209,6 @@ class Course extends BaseController
         }
 
         $courseModel->update($id, [
-            'end_date'   => date('Y-m-d'),
             'is_archive' => 1,
         ]);
 
@@ -232,7 +231,6 @@ class Course extends BaseController
         }
 
         $courseModel->update($id, [
-            'end_date'   => null,
             'is_archive' => 0,
         ]);
 
@@ -308,17 +306,17 @@ class Course extends BaseController
 
             // Availability rules for enrollment:
             // - course must not be archived
-            // - starting_date must be today or earlier (or NULL)
             // - end_date must be in the future (or NULL)
             $today = date('Y-m-d');
-            $startDate = $course->starting_date ? substr($course->starting_date, 0, 10) : null;
             $endDate   = $course->end_date ? substr($course->end_date, 0, 10) : null;
+            if ($endDate === '0000-00-00') {
+                $endDate = null;
+            }
             $isArchivedFlag = property_exists($course, 'is_archive') ? (int) $course->is_archive === 1 : false;
 
-            $tooEarly = !empty($startDate) && $startDate > $today;
             $tooLate  = !empty($endDate) && $endDate <= $today;
 
-            if ($isArchivedFlag || $tooEarly || $tooLate) {
+            if ($isArchivedFlag || $tooLate) {
                 log_message('info', 'Enrollment blocked for unavailable course ' . $courseId . ' for user ' . $userId);
                 return $this->response->setJSON([
                     'success'    => false,

@@ -29,12 +29,12 @@
 
             <div class="mb-3">
               <label for="starting_date" class="form-label">Start Date</label>
-              <input type="date" name="starting_date" id="starting_date" class="form-control" value="<?= old('starting_date') ?>">
+              <input type="date" name="starting_date" id="starting_date" class="form-control" value="<?= old('starting_date') ?>" min="<?= date('Y-m-d') ?>">
             </div>
 
             <div class="mb-3">
               <label for="end_date" class="form-label">End Date</label>
-              <input type="date" name="end_date" id="end_date" class="form-control" value="<?= old('end_date') ?>">
+              <input type="date" name="end_date" id="end_date" class="form-control" value="<?= old('end_date') ?>" min="<?= date('Y-m-d', strtotime('+1 day')) ?>">
             </div>
 
             <div class="d-flex justify-content-between">

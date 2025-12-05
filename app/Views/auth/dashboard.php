@@ -270,7 +270,8 @@ $(document).ready(function() {
         }, 'json').fail(function(xhr, status, error) {
             console.error('AJAX Error:', xhr.responseText);
             if (xhr.status === 403) {
-                alert('Access denied. Please make sure you are logged in as a student.');
+                alert('Your session security token has expired or is invalid. The page will reload to refresh it.');
+                window.location.reload();
             } else if (xhr.status === 400) {
                 alert('Invalid request. Please try again.');
             } else if (xhr.status === 500) {
