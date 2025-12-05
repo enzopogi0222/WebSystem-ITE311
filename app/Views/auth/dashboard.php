@@ -76,9 +76,11 @@
   <?php elseif ($currentRole === 'teacher'): ?>
    
     <div class="card shadow-sm mb-4">
-      <div class="card-header bg-success text-white d-flex align-items-center">
-        <i class="bi bi-journal-text me-2"></i>
-        <h5 class="mb-0">Your Courses</h5>
+      <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center">
+          <i class="bi bi-journal-text me-2"></i>
+          <h5 class="mb-0">Your Courses</h5>
+        </div>
       </div>
       <div class="card-body">
         <?php if (!empty($courses) && is_array($courses)): ?>
@@ -206,37 +208,62 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
+window.csrfTokenName = window.csrfTokenName || '<?= csrf_token() ?>';
+window.csrfTokenValue = window.csrfTokenValue || '<?= csrf_hash() ?>';
+
 $(document).ready(function() {
     $('.btn-enroll').on('click', function() {
         var courseId = $(this).data('course-id');
         var title = $(this).data('title');
         var button = $(this);
 
-        $.post('/course/enroll', {
+        var postData = {
             course_id: courseId,
-            <?= csrf_token() ?>: '<?= csrf_hash() ?>'
-        }, function(response) {
+        };
+        postData[window.csrfTokenName] = window.csrfTokenValue;
+
+        $.post('/course/enroll', postData, function(response) {
+         
+            if (response && response.csrf_token && response.csrf_hash) {
+                window.csrfTokenName = response.csrf_token;
+                window.csrfTokenValue = response.csrf_hash;
+            }
             if (response.success) {
                 // Show success message
                 alert(response.message);
-               
-                // Disable button and change text with better styling
-                button.prop('disabled', true).text('Enrolled').removeClass('btn-primary').addClass('btn-success');
+
                 
-                // Add to enrolled courses list
-                var enrolledUl = $('ul.list-group-flush.mb-3');
+                button.prop('disabled', true)
+                      .text('Enrolled')
+                      .removeClass('btn-success')
+                      .addClass('btn-secondary');
+
+              
+                var enrolledSection = $(
+                    'h5.mb-0:contains("Your Enrolled Courses")'
+                ).closest('.card').find('.card-body');
+
+                var enrolledUl = enrolledSection.find('ul.list-group-flush.mb-3');
                 if (enrolledUl.length === 0) {
-                    // Remove "not enrolled" message if it exists
-                    $('.text-muted:contains("You are not enrolled")').remove();
-                    // Create enrolled courses list
-                    $('.card-body').prepend('<ul class="list-group list-group-flush mb-3"></ul>');
-                    enrolledUl = $('ul.list-group-flush.mb-3');
+                    enrolledSection.find('.text-muted:contains("You are not enrolled")').remove();
+                    enrolledSection.prepend('<ul class="list-group list-group-flush mb-3"></ul>');
+                    enrolledUl = enrolledSection.find('ul.list-group-flush.mb-3');
                 }
+
                 var currentDate = new Date().toLocaleDateString();
-                enrolledUl.append('<li class="list-group-item d-flex justify-content-between align-items-center"><span><i class="bi bi-bookmark-check me-2 text-info"></i>' + title + '</span><small class="text-muted">' + currentDate + '</small></li>');
-                
-                // Remove course from available courses with animation
-                $('#course-' + courseId).fadeOut(300);
+                enrolledUl.append(
+                    '<li class="list-group-item d-flex justify-content-between align-items-center">'
+                    + '<span><i class="bi bi-bookmark-check me-2 text-info"></i>' + title + '</span>'
+                    + '<small class="text-muted">' + currentDate + '</small>'
+                    + '</li>'
+                );
+
+                $('#course-' + courseId).fadeOut(300, function() {
+                    $(this).remove();
+                });
+
+                // Ask header notifications script to refresh bell count & list
+                $(document).trigger('refreshNotifications');
             } else {
                 alert('Error: ' + response.message);
             }

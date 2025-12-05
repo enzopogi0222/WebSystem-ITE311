@@ -14,5 +14,8 @@ class CourseModel extends Model
         'description',
         'created_at',
         'updated_at',
+        'starting_date',
+        'end_date',
+        'is_archive',
     ];
 }

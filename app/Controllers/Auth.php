@@ -3,6 +3,8 @@
 namespace App\Controllers;
 
 use App\Controllers\BaseController;
+use App\Models\CourseModel;
+use App\Models\EnrollmentModel;
 
 class Auth extends BaseController
 {
@@ -24,10 +26,11 @@ class Auth extends BaseController
         if ($this->request->getMethod() === 'POST') {
             // Set validation rules
             $rules = [
-                'name' => 'required|min_length[2]|max_length[100]',
-                'email' => 'required|valid_email|is_unique[users.email]',
+                'name'     => 'required|min_length[2]|max_length[100]',
+                'email'    => 'required|valid_email|is_unique[users.email]',
                 'password' => 'required|min_length[6]',
-                'password_confirm' => 'required|matches[password]'
+                'password_confirm' => 'required|matches[password]',
+                'role'     => 'required|in_list[admin,teacher,student]',
             ];
 
             if (!$this->validate($rules)) {
@@ -38,7 +41,8 @@ class Auth extends BaseController
             $name = $this->request->getPost('name');
             $email = $this->request->getPost('email');
             $password = $this->request->getPost('password');
-            $role = $this->request->getPost('role') ?? 'user';
+            // Normalize role to lowercase without extra spaces
+            $role = strtolower(trim((string) $this->request->getPost('role')));
 
 
             $data = [
@@ -129,14 +133,31 @@ class Auth extends BaseController
             return redirect()->to('/login');
         }
 
+        $role = $session->get('role');
+
         $data = [
             'user' => [
                 'id' => $session->get('userID'),
                 'name' => $session->get('name'),
                 'email' => $session->get('email'),
-                'role' => $session->get('role')
-            ]
+                'role' => $role,
+            ],
         ];
+
+        // If admin or teacher, load all courses for dashboard display
+        if ($role === 'admin' || $role === 'teacher') {
+            $courseModel = new CourseModel();
+            $data['courses'] = $courseModel->findAll();
+        }
+
+        // If student, load enrolled and available courses for the dashboard
+        if ($role === 'student') {
+            $enrollmentModel = new EnrollmentModel();
+            $userId = $session->get('userID');
+
+            $data['enrolledCourses']  = $enrollmentModel->getUserEnrollments($userId);
+            $data['availableCourses'] = $enrollmentModel->getAvailableCourses($userId);
+        }
 
         return view('auth/dashboard', $data);
     }

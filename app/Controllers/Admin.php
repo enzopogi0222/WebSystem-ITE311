@@ -16,13 +16,13 @@ class Admin extends BaseController
             session()->setFlashdata('error', 'You do not have permission to access');
             return redirect()->to(base_url('/login'));
         }
-        
+
         return view('auth/dashboard', [
             'user' => [
                 'name' => session()->get('name'),
                 'email' => session()->get('email'),
                 'role' => session()->get('role'),
-            ]
+            ],
         ]);
     }
 
@@ -123,7 +123,8 @@ class Admin extends BaseController
         $data = [
             'name'  => $this->request->getPost('name'),
             'email' => $this->request->getPost('email'),
-            'role'  => $this->request->getPost('role'),
+            // Normalize role to lowercase without extra spaces
+            'role'  => strtolower(trim((string) $this->request->getPost('role'))),
         ];
 
         // Only update password if a new one was provided

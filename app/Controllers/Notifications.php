@@ -22,19 +22,23 @@ class Notifications extends BaseController
         }
 
         $notifications = $this->notificationModel->getNotificationsForUser($userId);
-        $count = $this->notificationModel->getUnreadCount($userId);
+        $unreadCount  = $this->notificationModel->getUnreadCount($userId);
 
-    return $this->response->setJSON([
-    'count' => count($notifications),
-    'notifications' => $notifications
-    ]);
-
+        return $this->response->setJSON([
+            'count'         => $unreadCount,
+            'notifications' => $notifications,
+        ]);
         
     }
 
     public function mark_as_read($id)
     {
         $success = $this->notificationModel->markAsRead($id);
-        return $this->response->setJSON(['success' => $success]);
+
+        return $this->response->setJSON([
+            'success'    => $success,
+            'csrf_token' => csrf_token(),
+            'csrf_hash'  => csrf_hash(),
+        ]);
     }
 }

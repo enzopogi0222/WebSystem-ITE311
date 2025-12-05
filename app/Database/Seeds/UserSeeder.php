@@ -10,35 +10,28 @@ class UserSeeder extends Seeder
     {
         $data = [
             [
-                'username' => 'gagni123',
+
                 'email' => 'admin@lms.com',
-                'password' => password_hash('admin123', PASSWORD_DEFAULT),
-                'first_name' => 'System',
-                'last_name' => 'Administrator',
+                'password' => password_hash('enzo0222', PASSWORD_DEFAULT),
+                'name' => 'Floro Lorenzo A. Gagni',
                 'role' => 'admin',
-                'status' => 'active',
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s'),
             ],
             [
-                'username' => 'roquero123',
+
                 'email' => 'instructor@lms.com',
-                'password' => password_hash('instructor123', PASSWORD_DEFAULT),
-                'first_name' => 'Aj',
-                'last_name' => 'Roquero',
+                'password' => password_hash('enzo0222', PASSWORD_DEFAULT),
+                'name' => 'Aj Roquero',
                 'role' => 'instructor',
-                'status' => 'active',
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s'),
             ],
             [
-                'username' => 'diga123',
                 'email' => 'student@lms.com',
-                'password' => password_hash('student123', PASSWORD_DEFAULT),
-                'first_name' => 'Zyf',
-                'last_name' => 'Diga',
+                'password' => password_hash('enzo0222', PASSWORD_DEFAULT),
+                'name' => 'Zyf Diga',
                 'role' => 'student',
-                'status' => 'active',
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s'),
             ],

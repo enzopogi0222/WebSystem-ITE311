@@ -208,7 +208,8 @@ class Materials extends BaseController
             return redirect()->back();
         }
 
-        $userId = session()->get('user_id');
+        // Use the same session key as the rest of the app ('userID')
+        $userId  = session()->get('userID');
         $userRole = session()->get('role');
 
        

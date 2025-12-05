@@ -64,10 +64,11 @@
                                     <i class="fas fa-sign-in-alt"></i> Login
                                 </button>
                             </div>
-                        </form>
-
-                        <div class="text-center mt-3">
-                            <p>Don't have an account? <a href="<?= base_url('/register') ?>" class="text-decoration-none">Register here</a></p>
+                                    </form>
+                            <div class="text-center mt-3">
+                            <a href="<?= base_url('/') ?>" class="btn btn-outline-secondary btn-sm">
+                                <i class="fas fa-arrow-left"></i> Back to Home
+                            </a>
                         </div>
                     </div>
                 </div>

@@ -134,6 +134,12 @@
                                 </button>
                             </div>
                         </form>
+
+                        <div class="text-center mt-3">
+                            <a href="<?= base_url('admin/users') ?>" class="btn btn-outline-secondary btn-sm">
+                                <i class="fas fa-arrow-left"></i> Back to list
+                            </a>
+                        </div>
                         </div>
                     </div>
                 </div>

@@ -42,8 +42,31 @@
                             <td><?= esc($user['name']) ?></td>
                             <td><?= esc($user['email']) ?></td>
                             <td>
-                                <span class="badge <?= $user['role'] === 'admin' ? 'bg-primary' : 'bg-secondary'; ?>">
-                                    <?= esc(ucfirst($user['role'])) ?>
+                                <?php
+                                    // Normalize role string for display
+                                    $role = strtolower(trim($user['role'] ?? ''));
+
+                                    switch ($role) {
+                                        case 'admin':
+                                            $badgeClass = 'bg-primary';
+                                            $label = 'Admin';
+                                            break;
+                                        case 'teacher':
+                                            $badgeClass = 'bg-warning text-dark';
+                                            $label = 'Teacher';
+                                            break;
+                                        case 'student':
+                                            $badgeClass = 'bg-info text-dark';
+                                            $label = 'Student';
+                                            break;
+                                        default:
+                                            $badgeClass = 'bg-secondary';
+                                            $label = 'Unknown';
+                                            break;
+                                    }
+                                ?>
+                                <span class="badge <?= $badgeClass; ?>">
+                                    <?= esc($label) ?>
                                 </span>
                             </td>
                             <td class="text-end">

@@ -18,9 +18,24 @@ class EnrollmentModel extends Model
 
     public function getUserEnrollments($user_id)
     {
+        $today = date('Y-m-d');
+
         return $this->select('enrollments.*, courses.title, enrollments.enrolled_at as enrollment_date')
                     ->join('courses', 'courses.id = enrollments.course_id')
                     ->where('enrollments.user_id', $user_id)
+                    // Only show active, non-archived courses to the student dashboard
+                    ->where('courses.is_archive', 0)
+                    // Respect course date window: starting_date <= today (or NULL), end_date > today (or NULL)
+                    ->groupStart()
+                        ->groupStart()
+                            ->where('courses.starting_date <=', $today)
+                            ->orWhere('courses.starting_date IS NULL', null, false)
+                        ->groupEnd()
+                        ->groupStart()
+                            ->where('courses.end_date >', $today)
+                            ->orWhere('courses.end_date IS NULL', null, false)
+                        ->groupEnd()
+                    ->groupEnd()
                     ->findAll();
     }
 
@@ -45,6 +60,20 @@ class EnrollmentModel extends Model
         if (!empty($enrolledIds)) {
             $builder->whereNotIn('id', $enrolledIds);
         }
+
+        $today = date('Y-m-d');
+        $builder->where('is_archive', 0)
+                // Only offer courses that are currently active in their date window
+                ->groupStart()
+                    ->groupStart()
+                        ->where('starting_date <=', $today)
+                        ->orWhere('starting_date IS NULL', null, false)
+                    ->groupEnd()
+                    ->groupStart()
+                        ->where('end_date >', $today)
+                        ->orWhere('end_date IS NULL', null, false)
+                    ->groupEnd()
+                ->groupEnd();
 
         return $builder->get()->getResultArray();
     }

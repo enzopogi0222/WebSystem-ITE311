@@ -50,24 +50,17 @@
                     <a class="nav-link" href="/dashboard">Dashboard</a>
                 </li>
 
+                <?php if (in_array(session()->get('role'), ['admin', 'teacher'], true)): ?>
+                    <li class="nav-item">
+                        <a class="nav-link" href="<?= base_url('courses/manage') ?>">Courses</a>
+                    </li>
+                <?php endif; ?>
+
                 <?php if (session()->get('role') === 'admin'): ?>
                     <li class="nav-item">
                         <a class="nav-link" href="<?= base_url('admin/users') ?>">Manage Users</a>
                     </li>
                 <?php endif; ?>
-
-                <?php if (session()->get('role') === 'teacher'): ?>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/my-courses">My Courses</a>
-                    </li>
-                <?php endif; ?>
-
-                <?php if (session()->get('role') === 'student'): ?>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/my-subjects">My Subjects</a>
-                    </li>
-                <?php endif; ?>
-
             </ul>
 
             <ul class="navbar-nav ms-auto">
@@ -110,7 +103,8 @@
 <!-- 🧠 Notifications Script -->
 <script>
 $(document).ready(function() {
-     
+    window.csrfTokenName = window.csrfTokenName || '<?= csrf_token() ?>';
+    window.csrfTokenValue = window.csrfTokenValue || '<?= csrf_hash() ?>';
 
     function loadNotifications() {
         $.get("<?= base_url('notifications'); ?>", function(data) {
@@ -152,11 +146,27 @@ $(document).ready(function() {
     // Mark notification as read
     $(document).on("click", ".mark-read", function() {
         const id = $(this).data("id");
-        $.post("<?= base_url('notifications/mark_read/'); ?>" + id, function(res) {
+        var postData = {};
+        postData[window.csrfTokenName] = window.csrfTokenValue;
+
+        $.post("<?= base_url('notifications/mark_read/'); ?>" + id, postData, function(res) {
+            if (res && res.csrf_token && res.csrf_hash) {
+                window.csrfTokenName = res.csrf_token;
+                window.csrfTokenValue = res.csrf_hash;
+            }
+
             if (res.success) loadNotifications();
         }).fail(function(xhr) {
             console.error("Mark as read failed:", xhr.responseText);
         });
+    });
+
+    // Initial load on page ready so badge shows correct count after reload
+    loadNotifications();
+
+    // Allow other scripts to trigger a notification refresh
+    $(document).on('refreshNotifications', function () {
+        loadNotifications();
     });
 
     // Load notifications when dropdown is shown (on click)
