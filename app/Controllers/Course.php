@@ -54,7 +54,12 @@ class Course extends BaseController
         
         // Teachers can only access courses assigned to them
         if ($role === 'teacher') {
-            return !empty($course['instructor_id']) && (int)$course['instructor_id'] === (int)$userId;
+            // Check if course has an instructor_id and it matches the teacher's userID
+            $instructorId = isset($course['instructor_id']) ? (int)$course['instructor_id'] : null;
+            $teacherId = isset($userId) ? (int)$userId : null;
+            
+            // Teacher can access if instructor_id is set and matches their userID
+            return $instructorId !== null && $instructorId > 0 && $instructorId === $teacherId;
         }
         
         return false;
@@ -302,9 +307,9 @@ class Course extends BaseController
                         && $endDateDateOnly <= $today;
         $isArchived = $isFlagArchived || $isDateExpired;
 
-        // Check if user can edit (admin or teacher assigned to course)
+        // Only admins can edit courses
         $role = session()->get('role');
-        $canEdit = ($role === 'admin') || ($role === 'teacher' && $this->canAccessCourse($course));
+        $canEdit = ($role === 'admin');
 
         return view('courses/show', [
             'course' => $course,
@@ -537,7 +542,8 @@ class Course extends BaseController
 
     public function edit($id)
     {
-        if ($redirect = $this->ensureCourseManager()) {
+        // Only admins can edit courses
+        if ($redirect = $this->ensureAdminOnly()) {
             return $redirect;
         }
 
@@ -546,12 +552,6 @@ class Course extends BaseController
 
         if (! $course) {
             session()->setFlashdata('error', 'Course not found.');
-            return redirect()->to('/courses/manage');
-        }
-
-        // Check if teacher can access this course
-        if (!$this->canAccessCourse($course)) {
-            session()->setFlashdata('error', 'You do not have permission to access this course.');
             return redirect()->to('/courses/manage');
         }
 
@@ -575,19 +575,15 @@ class Course extends BaseController
 
     public function update($id)
     {
-        if ($redirect = $this->ensureCourseManager()) {
+        // Only admins can update courses
+        if ($redirect = $this->ensureAdminOnly()) {
             return $redirect;
         }
 
-        // Check if teacher can access this course
         $courseModel = new CourseModel();
         $course = $courseModel->find($id);
         if (!$course) {
             session()->setFlashdata('error', 'Course not found.');
-            return redirect()->to('/courses/manage');
-        }
-        if (!$this->canAccessCourse($course)) {
-            session()->setFlashdata('error', 'You do not have permission to access this course.');
             return redirect()->to('/courses/manage');
         }
 
@@ -710,12 +706,9 @@ class Course extends BaseController
         ];
         
         // Only admins can change instructor assignment
-        $newInstructorId = null;
-        if ($role === 'admin') {
-            $instructorId = $this->request->getPost('instructor_id');
-            $newInstructorId = !empty($instructorId) ? (int)$instructorId : null;
-            $updateData['instructor_id'] = $newInstructorId;
-        }
+        $instructorId = $this->request->getPost('instructor_id');
+        $newInstructorId = !empty($instructorId) ? (int)$instructorId : null;
+        $updateData['instructor_id'] = $newInstructorId;
         
         $courseModel->update($id, $updateData);
 
@@ -742,7 +735,8 @@ class Course extends BaseController
 
     public function delete($id)
     {
-        if ($redirect = $this->ensureCourseManager()) {
+        // Only admins can delete courses
+        if ($redirect = $this->ensureAdminOnly()) {
             return $redirect;
         }
 
@@ -751,12 +745,6 @@ class Course extends BaseController
 
         if (! $course) {
             session()->setFlashdata('error', 'Course not found.');
-            return redirect()->to('/courses/manage');
-        }
-
-        // Check if teacher can access this course
-        if (!$this->canAccessCourse($course)) {
-            session()->setFlashdata('error', 'You do not have permission to delete this course.');
             return redirect()->to('/courses/manage');
         }
 
@@ -768,7 +756,8 @@ class Course extends BaseController
 
     public function archive($id)
     {
-        if ($redirect = $this->ensureCourseManager()) {
+        // Only admins can archive courses
+        if ($redirect = $this->ensureAdminOnly()) {
             return $redirect;
         }
 
@@ -777,12 +766,6 @@ class Course extends BaseController
 
         if (! $course) {
             session()->setFlashdata('error', 'Course not found.');
-            return redirect()->to('/courses/manage');
-        }
-
-        // Check if teacher can access this course
-        if (!$this->canAccessCourse($course)) {
-            session()->setFlashdata('error', 'You do not have permission to archive this course.');
             return redirect()->to('/courses/manage');
         }
 
@@ -796,7 +779,8 @@ class Course extends BaseController
 
     public function restore($id)
     {
-        if ($redirect = $this->ensureCourseManager()) {
+        // Only admins can restore courses
+        if ($redirect = $this->ensureAdminOnly()) {
             return $redirect;
         }
 
@@ -805,12 +789,6 @@ class Course extends BaseController
 
         if (! $course) {
             session()->setFlashdata('error', 'Course not found.');
-            return redirect()->to('/courses/manage');
-        }
-
-        // Check if teacher can access this course
-        if (!$this->canAccessCourse($course)) {
-            session()->setFlashdata('error', 'You do not have permission to restore this course.');
             return redirect()->to('/courses/manage');
         }
 

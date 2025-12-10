@@ -108,8 +108,6 @@
                          onclick="return confirm('Are you sure you want to delete this course?');">
                         Delete
                       </a>
-                    <?php elseif (session()->get('role') === 'teacher'): ?>
-                      <a href="<?= base_url('courses/manage/edit/' . $course['id']) ?>" class="btn btn-sm btn-outline-primary">Edit</a>
                     <?php endif; ?>
                   </td>
                 </tr>
