@@ -307,7 +307,7 @@ class Materials extends BaseController
             'materials' => $materials,
             'course_id' => $course_id,
             'user' => [
-                'name' => session()->get('username'),
+                'name' => session()->get('name') ?? session()->get('username') ?? 'User',
                 'role' => session()->get('role')
             ]
         ]);

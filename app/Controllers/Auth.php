@@ -192,6 +192,24 @@ class Auth extends BaseController
             ],
         ];
 
+        // If admin, calculate statistics
+        if ($role === 'admin') {
+            $userModel = new UserModel();
+            $courseModel = new CourseModel();
+            $enrollmentModel = new EnrollmentModel();
+            
+            // Get all users and count by role
+            $allUsers = $userModel->findAll();
+            $data['stats'] = [
+                'total_users' => count($allUsers),
+                'total_admins' => count(array_filter($allUsers, function($u) { return strtolower($u['role'] ?? '') === 'admin'; })),
+                'total_teachers' => count(array_filter($allUsers, function($u) { return strtolower($u['role'] ?? '') === 'teacher'; })),
+                'total_students' => count(array_filter($allUsers, function($u) { return strtolower($u['role'] ?? '') === 'student'; })),
+                'total_courses' => $courseModel->countAllResults(),
+                'active_courses' => $courseModel->where('is_archive', 0)->countAllResults(),
+            ];
+        }
+
         // If admin or teacher, load courses for dashboard display
         if ($role === 'admin' || $role === 'teacher') {
             $courseModel = new CourseModel();

@@ -23,6 +23,17 @@
 
 <div class="card shadow-sm">
     <div class="card-body">
+        <!-- Search Bar for Users -->
+        <div class="mb-3">
+            <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                <input type="text" id="userSearchInput" class="form-control" placeholder="Search users by ID, name, email, role, or status...">
+                <button class="btn btn-outline-secondary" type="button" id="clearUserSearch">
+                    <i class="bi bi-x"></i> Clear
+                </button>
+            </div>
+        </div>
+        
         <div class="table-responsive">
             <table class="table table-striped table-hover align-middle">
                 <thead class="table-success">
@@ -35,10 +46,15 @@
                         <th scope="col" class="text-end">Actions</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="usersTableBody">
                 <?php if (!empty($users)): ?>
                     <?php foreach ($users as $user): ?>
-                        <tr>
+                        <tr class="user-row" 
+                            data-id="<?= esc($user['id']) ?>"
+                            data-name="<?= strtolower(esc($user['name'] ?? '')) ?>"
+                            data-email="<?= strtolower(esc($user['email'] ?? '')) ?>"
+                            data-role="<?= strtolower(esc($user['role'] ?? '')) ?>"
+                            data-status="<?= strtolower(esc($user['status'] ?? 'active')) ?>">
                             <td><?= esc($user['id']) ?></td>
                             <td><?= esc($user['name']) ?></td>
                             <td><?= esc($user['email']) ?></td>
@@ -113,9 +129,86 @@
                 <?php endif; ?>
                 </tbody>
             </table>
+            <div id="noUsersResults" class="text-center text-muted py-3" style="display: none;">
+                <i class="bi bi-search"></i> No users found matching your search.
+            </div>
         </div>
     </div>
 </div>
+
+<script>
+$(document).ready(function() {
+    // User Search Functionality
+    $('#userSearchInput').on('keyup', function() {
+        var value = $(this).val().toLowerCase();
+        var hasResults = false;
+        
+        $('.user-row').each(function() {
+            var id = $(this).data('id').toString();
+            var name = $(this).data('name') || '';
+            var email = $(this).data('email') || '';
+            var role = $(this).data('role') || '';
+            var status = $(this).data('status') || '';
+            
+            // Get role label for search
+            var roleLabel = '';
+            switch(role) {
+                case 'admin':
+                    roleLabel = 'admin';
+                    break;
+                case 'teacher':
+                    roleLabel = 'teacher';
+                    break;
+                case 'student':
+                    roleLabel = 'student';
+                    break;
+            }
+            
+            // Get status label for search
+            var statusLabel = '';
+            switch(status) {
+                case 'active':
+                    statusLabel = 'active';
+                    break;
+                case 'inactive':
+                    statusLabel = 'inactive';
+                    break;
+            }
+            
+            var searchText = id + ' ' + name + ' ' + email + ' ' + roleLabel + ' ' + statusLabel;
+            
+            if (searchText.indexOf(value) > -1) {
+                $(this).show();
+                hasResults = true;
+            } else {
+                $(this).hide();
+            }
+        });
+        
+        if (value.length > 0) {
+            $('#clearUserSearch').show();
+            if (hasResults) {
+                $('#noUsersResults').hide();
+            } else {
+                $('#noUsersResults').show();
+            }
+        } else {
+            $('#clearUserSearch').hide();
+            $('#noUsersResults').hide();
+        }
+    });
+    
+    $('#clearUserSearch').on('click', function() {
+        $('#userSearchInput').val('');
+        $('.user-row').show();
+        $('#noUsersResults').hide();
+        $(this).hide();
+    });
+    
+    // Hide clear button initially
+    $('#clearUserSearch').hide();
+});
+</script>
 
 </body>
 </html>

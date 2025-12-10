@@ -35,6 +35,18 @@
               <h6 class="fw-bold text-warning mb-3">
                 <i class="bi bi-clock-history me-2"></i>Pending Enrollment Requests (<?= count($pendingEnrollments) ?>)
               </h6>
+              
+              <!-- Search Bar for Pending Enrollments -->
+              <div class="mb-3">
+                <div class="input-group">
+                  <span class="input-group-text"><i class="bi bi-search"></i></span>
+                  <input type="text" id="pendingEnrollmentsSearchInput" class="form-control" placeholder="Search pending requests by name, email, or date...">
+                  <button class="btn btn-outline-secondary" type="button" id="clearPendingSearch">
+                    <i class="bi bi-x"></i> Clear
+                  </button>
+                </div>
+              </div>
+              
               <div class="table-responsive">
                 <table class="table table-striped table-hover align-middle">
                   <thead class="table-warning">
@@ -47,13 +59,17 @@
                       <th class="text-end">Actions</th>
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody id="pendingEnrollmentsTableBody">
                     <?php foreach ($pendingEnrollments as $index => $request): ?>
                       <?php
                         $requestDate = !empty($request['enrolled_at']) ? date('F d, Y', strtotime($request['enrolled_at'])) : 'N/A';
                         $requestTime = !empty($request['enrolled_at']) ? date('h:i A', strtotime($request['enrolled_at'])) : 'N/A';
                       ?>
-                      <tr>
+                      <tr class="pending-enrollment-row" 
+                          data-name="<?= strtolower(esc($request['name'] ?? '')) ?>"
+                          data-email="<?= strtolower(esc($request['email'] ?? '')) ?>"
+                          data-date="<?= strtolower($requestDate) ?>"
+                          data-time="<?= strtolower($requestTime) ?>">
                         <td><?= $index + 1 ?></td>
                         <td>
                           <strong><?= esc($request['name'] ?? 'N/A') ?></strong>
@@ -78,6 +94,9 @@
                   </tbody>
                 </table>
               </div>
+              <div id="noPendingResults" class="text-center text-muted py-3" style="display: none;">
+                <i class="bi bi-search"></i> No pending requests found matching your search.
+              </div>
             </div>
           <?php endif; ?>
 
@@ -85,6 +104,20 @@
           <h6 class="fw-bold text-success mb-3">
             <i class="bi bi-check-circle me-2"></i>Approved Enrolled Students
           </h6>
+          
+          <!-- Search Bar for Enrolled Students -->
+          <?php if (!empty($students) && is_array($students)): ?>
+          <div class="mb-3">
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-search"></i></span>
+              <input type="text" id="enrolledStudentsSearchInput" class="form-control" placeholder="Search students by name, email, or enrollment date...">
+              <button class="btn btn-outline-secondary" type="button" id="clearEnrolledStudentsSearch">
+                <i class="bi bi-x"></i> Clear
+              </button>
+            </div>
+          </div>
+          <?php endif; ?>
+          
           <?php if (!empty($students) && is_array($students)): ?>
             <div class="table-responsive">
               <table class="table table-striped table-hover align-middle">
@@ -98,13 +131,17 @@
                     <th class="text-end">Actions</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody id="enrolledStudentsTableBody">
                   <?php foreach ($students as $index => $student): ?>
                     <?php
                       $enrolledDate = !empty($student['enrolled_at']) ? date('F d, Y', strtotime($student['enrolled_at'])) : 'N/A';
                       $enrolledTime = !empty($student['enrolled_at']) ? date('h:i A', strtotime($student['enrolled_at'])) : 'N/A';
                     ?>
-                    <tr>
+                    <tr class="enrolled-student-row" 
+                        data-name="<?= strtolower(esc($student['name'] ?? '')) ?>"
+                        data-email="<?= strtolower(esc($student['email'] ?? '')) ?>"
+                        data-date="<?= strtolower($enrolledDate) ?>"
+                        data-time="<?= strtolower($enrolledTime) ?>">
                       <td><?= $index + 1 ?></td>
                       <td>
                         <strong><?= esc($student['name'] ?? 'N/A') ?></strong>
@@ -124,10 +161,14 @@
                 </tbody>
               </table>
             </div>
+            
+            <div id="noEnrolledStudentsResults" class="text-center text-muted py-3" style="display: none;">
+              <i class="bi bi-search"></i> No students found matching your search.
+            </div>
 
             <div class="mt-3">
               <p class="text-muted">
-                <strong>Total Students:</strong> <?= count($students) ?>
+                <strong>Total Students:</strong> <span id="totalStudentsCount"><?= count($students) ?></span>
               </p>
             </div>
           <?php else: ?>
@@ -149,3 +190,102 @@
   </div>
 </div>
 
+<script>
+$(document).ready(function() {
+    // Pending Enrollments Search
+    $('#pendingEnrollmentsSearchInput').on('keyup', function() {
+        var value = $(this).val().toLowerCase();
+        var hasResults = false;
+        var visibleCount = 0;
+        
+        $('.pending-enrollment-row').each(function() {
+            var name = $(this).data('name') || '';
+            var email = $(this).data('email') || '';
+            var date = $(this).data('date') || '';
+            var time = $(this).data('time') || '';
+            var searchText = name + ' ' + email + ' ' + date + ' ' + time;
+            
+            if (searchText.indexOf(value) > -1) {
+                $(this).show();
+                hasResults = true;
+                visibleCount++;
+            } else {
+                $(this).hide();
+            }
+        });
+        
+        if (value.length > 0) {
+            $('#clearPendingSearch').show();
+            if (hasResults) {
+                $('#noPendingResults').hide();
+            } else {
+                $('#noPendingResults').show();
+            }
+        } else {
+            $('#clearPendingSearch').hide();
+            $('#noPendingResults').hide();
+        }
+    });
+    
+    $('#clearPendingSearch').on('click', function() {
+        $('#pendingEnrollmentsSearchInput').val('');
+        $('.pending-enrollment-row').show();
+        $('#noPendingResults').hide();
+        $(this).hide();
+    });
+    
+    // Enrolled Students Search
+    $('#enrolledStudentsSearchInput').on('keyup', function() {
+        var value = $(this).val().toLowerCase();
+        var hasResults = false;
+        var visibleCount = 0;
+        
+        $('.enrolled-student-row').each(function() {
+            var name = $(this).data('name') || '';
+            var email = $(this).data('email') || '';
+            var date = $(this).data('date') || '';
+            var time = $(this).data('time') || '';
+            var searchText = name + ' ' + email + ' ' + date + ' ' + time;
+            
+            if (searchText.indexOf(value) > -1) {
+                $(this).show();
+                hasResults = true;
+                visibleCount++;
+            } else {
+                $(this).hide();
+            }
+        });
+        
+        // Update total count
+        $('#totalStudentsCount').text(visibleCount);
+        
+        if (value.length > 0) {
+            $('#clearEnrolledStudentsSearch').show();
+            if (hasResults) {
+                $('#noEnrolledStudentsResults').hide();
+            } else {
+                $('#noEnrolledStudentsResults').show();
+            }
+        } else {
+            $('#clearEnrolledStudentsSearch').hide();
+            $('#noEnrolledStudentsResults').hide();
+            $('#totalStudentsCount').text($('.enrolled-student-row').length);
+        }
+    });
+    
+    $('#clearEnrolledStudentsSearch').on('click', function() {
+        $('#enrolledStudentsSearchInput').val('');
+        $('.enrolled-student-row').show();
+        $('#noEnrolledStudentsResults').hide();
+        $('#totalStudentsCount').text($('.enrolled-student-row').length);
+        $(this).hide();
+    });
+    
+    // Hide clear buttons initially
+    $('#clearPendingSearch').hide();
+    $('#clearEnrolledStudentsSearch').hide();
+});
+</script>
+
+</body>
+</html>

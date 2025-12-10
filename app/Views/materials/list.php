@@ -54,6 +54,19 @@
                             </div>
                         <?php endif; ?>
 
+                        <!-- Search Bar for Materials -->
+                        <?php if (!empty($materials)): ?>
+                        <div class="mb-3">
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                                <input type="text" id="materialsListSearchInput" class="form-control" placeholder="Search materials by file name, type, or date...">
+                                <button class="btn btn-outline-secondary" type="button" id="clearMaterialsListSearch">
+                                    <i class="bi bi-x"></i> Clear
+                                </button>
+                            </div>
+                        </div>
+                        <?php endif; ?>
+
                         <?php if (!empty($materials)): ?>
                             <div class="table-responsive">
                                 <table class="table table-hover">
@@ -65,9 +78,18 @@
                                             <th><i class="fas fa-cogs me-2"></i>Actions</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
+                                    <tbody id="materialsTableBody">
                                         <?php foreach ($materials as $material): ?>
-                                            <tr>
+                                            <?php
+                                            $fileExtension = strtolower(pathinfo($material['file_name'], PATHINFO_EXTENSION));
+                                            $uploadDate = date('M j, Y g:i A', strtotime($material['created_at']));
+                                            $uploadDateShort = date('M j, Y', strtotime($material['created_at']));
+                                            ?>
+                                            <tr class="material-row" 
+                                                data-filename="<?= strtolower(esc($material['file_name'] ?? '')) ?>"
+                                                data-filetype="<?= strtolower($fileExtension) ?>"
+                                                data-uploaddate="<?= strtolower($uploadDate) ?>"
+                                                data-uploaddateshort="<?= strtolower($uploadDateShort) ?>">
                                                 <td>
                                                     <?php
                                                     $fileExtension = strtolower(pathinfo($material['file_name'], PATHINFO_EXTENSION));
@@ -110,7 +132,7 @@
                                                 <td>
                                                     <small class="text-muted">
                                                         <i class="fas fa-clock me-1"></i>
-                                                        <?= date('M j, Y g:i A', strtotime($material['created_at'])) ?>
+                                                        <?= $uploadDate ?>
                                                     </small>
                                                 </td>
                                                 <td>
@@ -134,6 +156,9 @@
                                         <?php endforeach; ?>
                                     </tbody>
                                 </table>
+                            </div>
+                            <div id="noMaterialsListResults" class="text-center text-muted py-3" style="display: none;">
+                                <i class="bi bi-search"></i> No materials found matching your search.
                             </div>
                         <?php else: ?>
                             <div class="text-center py-5">
@@ -160,6 +185,54 @@
         </div>
     </div>
 </div>
+
+<script>
+$(document).ready(function() {
+    // Materials List Search Functionality
+    $('#materialsListSearchInput').on('keyup', function() {
+        var value = $(this).val().toLowerCase();
+        var hasResults = false;
+        
+        $('.material-row').each(function() {
+            var filename = $(this).data('filename') || '';
+            var filetype = $(this).data('filetype') || '';
+            var uploaddate = $(this).data('uploaddate') || '';
+            var uploaddateshort = $(this).data('uploaddateshort') || '';
+            
+            var searchText = filename + ' ' + filetype + ' ' + uploaddate + ' ' + uploaddateshort;
+            
+            if (searchText.indexOf(value) > -1) {
+                $(this).show();
+                hasResults = true;
+            } else {
+                $(this).hide();
+            }
+        });
+        
+        if (value.length > 0) {
+            $('#clearMaterialsListSearch').show();
+            if (hasResults) {
+                $('#noMaterialsListResults').hide();
+            } else {
+                $('#noMaterialsListResults').show();
+            }
+        } else {
+            $('#clearMaterialsListSearch').hide();
+            $('#noMaterialsListResults').hide();
+        }
+    });
+    
+    $('#clearMaterialsListSearch').on('click', function() {
+        $('#materialsListSearchInput').val('');
+        $('.material-row').show();
+        $('#noMaterialsListResults').hide();
+        $(this).hide();
+    });
+    
+    // Hide clear button initially
+    $('#clearMaterialsListSearch').hide();
+});
+</script>
 
 </body>
 </html>
