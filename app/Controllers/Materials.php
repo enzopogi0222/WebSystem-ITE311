@@ -5,6 +5,8 @@ namespace App\Controllers;
 use App\Controllers\BaseController;
 use App\Models\MaterialsModel;
 use App\Models\EnrollmentModel;
+use App\Models\NotificationModel;
+use App\Models\CourseModel;
 
 class Materials extends BaseController
 {
@@ -32,6 +34,16 @@ class Materials extends BaseController
         return redirect()->to(base_url('/dashboard'));
     }
 
+    // Validate course_id is numeric to prevent SQL injection
+    if ($course_id !== null && (!is_numeric($course_id) || (int)$course_id <= 0)) {
+        session()->setFlashdata('error', 'Invalid course ID.');
+        return redirect()->to(base_url('/dashboard'));
+    }
+
+    if ($course_id !== null) {
+        $course_id = (int)$course_id;
+    }
+
   
     if ($this->request->getMethod() === 'POST') {
         // Load Validation Library
@@ -40,7 +52,7 @@ class Materials extends BaseController
         $validation->setRules([
             'material_file' => [
                 'label' => 'Material File',
-                'rules' => 'uploaded[material_file]|max_size[material_file,10240]|ext_in[material_file,pdf,doc,docx,ppt,pptx,txt,jpg,jpeg,png]'
+                'rules' => 'uploaded[material_file]|max_size[material_file,10240]|ext_in[material_file,pdf,ppt,pptx]'
             ]
         ]);
 
@@ -75,6 +87,25 @@ class Materials extends BaseController
                 // Save to database using MaterialsModel
                 if ($this->materialsModel->insertMaterial($data)) {
                     session()->setFlashdata('success', 'Material uploaded successfully!');
+                    
+                    // Notify all enrolled students in this course
+                    $enrollmentModel = new EnrollmentModel();
+                    $courseModel = new CourseModel();
+                    $notificationModel = new NotificationModel();
+                    
+                    // Get course information
+                    $course = $courseModel->find($course_id);
+                    $courseTitle = $course ? ($course['title'] ?? 'Course') : 'Course';
+                    $materialFileName = $file->getClientName();
+                    
+                    // Get all enrolled students
+                    $enrolledStudents = $enrollmentModel->getEnrolledStudents($course_id);
+                    
+                    // Create notification for each enrolled student
+                    foreach ($enrolledStudents as $student) {
+                        $message = "New material '{$materialFileName}' has been uploaded for course: {$courseTitle}";
+                        $notificationModel->createNotification($student['user_id'], $message);
+                    }
                 } else {
                     session()->setFlashdata('error', 'Failed to save material information.');
                 }
@@ -107,7 +138,7 @@ class Materials extends BaseController
         $validation->setRules([
             'material_file' => [
                 'label' => 'Material File',
-                'rules' => 'uploaded[material_file]|max_size[material_file,10240]|ext_in[material_file,pdf,doc,docx,ppt,pptx,txt,jpg,jpeg,png]'
+                'rules' => 'uploaded[material_file]|max_size[material_file,10240]|ext_in[material_file,pdf,ppt,pptx]'
             ]
         ]);
 
@@ -168,6 +199,14 @@ class Materials extends BaseController
             return redirect()->back();
         }
 
+        // Validate material_id is numeric to prevent SQL injection
+        if (!is_numeric($material_id) || (int)$material_id <= 0) {
+            session()->setFlashdata('error', 'Invalid material ID.');
+            return redirect()->back();
+        }
+
+        $material_id = (int)$material_id;
+
         $material = $this->materialsModel->getMaterialById($material_id);
         
         if (!$material) {
@@ -200,7 +239,14 @@ class Materials extends BaseController
             return redirect()->to(base_url('/login'));
         }
 
-   
+        // Validate material_id is numeric to prevent SQL injection
+        if (!is_numeric($material_id) || (int)$material_id <= 0) {
+            session()->setFlashdata('error', 'Invalid material ID.');
+            return redirect()->back();
+        }
+
+        $material_id = (int)$material_id;
+
         $material = $this->materialsModel->getMaterialById($material_id);
         
         if (!$material) {
@@ -212,9 +258,15 @@ class Materials extends BaseController
         $userId  = session()->get('userID');
         $userRole = session()->get('role');
 
-       
+        // Validate course_id from material is numeric
+        $courseId = isset($material['course_id']) ? $material['course_id'] : null;
+        if ($courseId !== null && !is_numeric($courseId)) {
+            session()->setFlashdata('error', 'Invalid course data.');
+            return redirect()->back();
+        }
+
         if ($userRole === 'student') {
-            $isEnrolled = $this->enrollmentModel->isAlreadyEnrolled($userId, $material['course_id']);
+            $isEnrolled = $this->enrollmentModel->isAlreadyEnrolled($userId, (int)$courseId);
             if (!$isEnrolled) {
                 session()->setFlashdata('error', 'You must be enrolled in this course to download materials.');
                 return redirect()->back();
@@ -240,6 +292,14 @@ class Materials extends BaseController
             session()->setFlashdata('error', 'Please login to access this page.');
             return redirect()->to(base_url('/login'));
         }
+
+        // Validate course_id is numeric to prevent SQL injection
+        if (!is_numeric($course_id) || (int)$course_id <= 0) {
+            session()->setFlashdata('error', 'Invalid course ID.');
+            return redirect()->to(base_url('/dashboard'));
+        }
+
+        $course_id = (int)$course_id;
 
         $materials = $this->materialsModel->getMaterialsByCourse($course_id);
 

@@ -35,13 +35,22 @@
                                 <label for="email" class="form-label">Email Address</label>
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="fas fa-envelope"></i></span>
-                                    <input type="email" class="form-control <?= isset($validation) && $validation->hasError('email') ? 'is-invalid' : '' ?>" 
-                                           id="email" name="email" value="<?= old('email') ?>" required>
+                                    <input type="email" 
+                                           class="form-control <?= isset($validation) && $validation->hasError('email') ? 'is-invalid' : '' ?>" 
+                                           id="email" 
+                                           name="email" 
+                                           value="<?= old('email') ?>" 
+                                           pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}"
+                                           title="Email must contain @ and no special characters except @, ., _, %, +, -"
+                                           required>
                                     <?php if (isset($validation) && $validation->hasError('email')): ?>
                                         <div class="invalid-feedback">
                                             <?= $validation->getError('email') ?>
                                         </div>
                                     <?php endif; ?>
+                                    <div class="invalid-feedback" id="email-error" style="display: none;">
+                                        Email must contain @ and no special characters except @, ., _, %, +, -
+                                    </div>
                                 </div>
                             </div>
 
@@ -49,13 +58,21 @@
                                 <label for="password" class="form-label">Password</label>
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="fas fa-lock"></i></span>
-                                    <input type="password" class="form-control <?= isset($validation) && $validation->hasError('password') ? 'is-invalid' : '' ?>" 
-                                           id="password" name="password" required>
+                                    <input type="password" 
+                                           class="form-control <?= isset($validation) && $validation->hasError('password') ? 'is-invalid' : '' ?>" 
+                                           id="password" 
+                                           name="password" 
+                                           pattern="[a-zA-Z0-9]+"
+                                           title="Password must contain only letters and numbers. No special characters allowed."
+                                           required>
                                     <?php if (isset($validation) && $validation->hasError('password')): ?>
                                         <div class="invalid-feedback">
                                             <?= $validation->getError('password') ?>
                                         </div>
                                     <?php endif; ?>
+                                    <div class="invalid-feedback" id="password-error" style="display: none;">
+                                        Password must contain only letters and numbers. No special characters allowed.
+                                    </div>
                                 </div>
                             </div>
 
@@ -77,5 +94,69 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Frontend validation for email and password
+        document.addEventListener('DOMContentLoaded', function() {
+            const emailInput = document.getElementById('email');
+            const passwordInput = document.getElementById('password');
+            const form = document.querySelector('form');
+
+            // Email validation
+            emailInput.addEventListener('input', function() {
+                const email = this.value;
+                const emailError = document.getElementById('email-error');
+                
+                if (email && !email.includes('@')) {
+                    this.setCustomValidity('Email must contain @ symbol');
+                    emailError.style.display = 'block';
+                    this.classList.add('is-invalid');
+                } else if (email && !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email)) {
+                    this.setCustomValidity('Invalid email format. No special characters except @, ., _, %, +, -');
+                    emailError.style.display = 'block';
+                    this.classList.add('is-invalid');
+                } else {
+                    this.setCustomValidity('');
+                    emailError.style.display = 'none';
+                    this.classList.remove('is-invalid');
+                }
+            });
+
+            // Password validation (alphanumeric only)
+            passwordInput.addEventListener('input', function() {
+                const password = this.value;
+                const passwordError = document.getElementById('password-error');
+                
+                if (password && !/^[a-zA-Z0-9]+$/.test(password)) {
+                    this.setCustomValidity('Password must contain only letters and numbers. No special characters allowed.');
+                    passwordError.style.display = 'block';
+                    this.classList.add('is-invalid');
+                } else {
+                    this.setCustomValidity('');
+                    passwordError.style.display = 'none';
+                    this.classList.remove('is-invalid');
+                }
+            });
+
+            // Form submission validation
+            form.addEventListener('submit', function(e) {
+                const email = emailInput.value;
+                const password = passwordInput.value;
+
+                // Validate email
+                if (!email.includes('@') || !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email)) {
+                    e.preventDefault();
+                    emailInput.focus();
+                    return false;
+                }
+
+                // Validate password
+                if (!/^[a-zA-Z0-9]+$/.test(password)) {
+                    e.preventDefault();
+                    passwordInput.focus();
+                    return false;
+                }
+            });
+        });
+    </script>
 </body>
 </html>

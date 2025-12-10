@@ -5,6 +5,8 @@ namespace App\Controllers;
 use App\Controllers\BaseController;
 use App\Models\CourseModel;
 use App\Models\EnrollmentModel;
+use App\Models\NotificationModel;
+use App\Models\UserModel;
 
 class Auth extends BaseController
 {
@@ -28,7 +30,7 @@ class Auth extends BaseController
             $rules = [
                 'name'     => 'required|min_length[2]|max_length[100]',
                 'email'    => 'required|valid_email|is_unique[users.email]',
-                'password' => 'required|min_length[6]',
+                'password' => 'required|min_length[6]|alpha_numeric',
                 'password_confirm' => 'required|matches[password]',
                 'role'     => 'required|in_list[admin,teacher,student]',
             ];
@@ -44,12 +46,26 @@ class Auth extends BaseController
             // Normalize role to lowercase without extra spaces
             $role = strtolower(trim((string) $this->request->getPost('role')));
 
+            // Step 1: Validate Email (prevent bad format) - Additional security layer
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $session->setFlashdata('error', 'Invalid email format.');
+                return view('auth/register', ['validation' => $this->validator]);
+            }
 
+            // Step 2: Validate Password (alphanumeric only, no special characters)
+            if (!preg_match('/^[a-zA-Z0-9]+$/', $password)) {
+                $session->setFlashdata('error', 'Password must contain only letters and numbers. No special characters allowed.');
+                return view('auth/register', ['validation' => $this->validator]);
+            }
+
+            // Step 3: Protect SQL (CodeIgniter's query builder uses prepared statements automatically)
+            // The insert() method uses parameterized queries internally
             $data = [
                 'name' => $name,
                 'email' => $email,
                 'password'   => password_hash($password, PASSWORD_DEFAULT),
                 'role' => $role,
+                'status' => 'active',
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s')
             ];
@@ -57,6 +73,18 @@ class Auth extends BaseController
             $db = \Config\Database::connect();
             $builder = $db->table('users');
             if ($builder->insert($data)) {
+                // Notify all admins about the new user creation
+                $notificationModel = new NotificationModel();
+                $userModel = new UserModel();
+                $admins = $userModel->where('role', 'admin')->findAll();
+                
+                $roleLabel = ucfirst($role);
+                $adminMessage = "👤 New {$roleLabel} Created: {$name} ({$email}) has been added to the system.";
+                
+                foreach ($admins as $admin) {
+                    $notificationModel->createNotification($admin['id'], $adminMessage);
+                }
+                
                 $session->setFlashdata('success', 'User account created successfully.');
                 return redirect()->to('/admin/users');
             } else {
@@ -80,7 +108,7 @@ class Auth extends BaseController
         if ($this->request->getMethod() === 'POST') {
             $rules = [
                 'email' => 'required|valid_email',
-                'password' => 'required'
+                'password' => 'required|alpha_numeric'
             ];
 
             if (!$this->validate($rules)) {
@@ -90,11 +118,31 @@ class Auth extends BaseController
             $email = $this->request->getPost('email');
             $password = $this->request->getPost('password');
 
+            // Step 1: Validate Email (prevent bad format) - Additional security layer
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $session->setFlashdata('error', 'Invalid email format.');
+                return view('auth/login', ['validation' => $this->validator]);
+            }
+
+            // Step 2: Validate Password (alphanumeric only, no special characters)
+            if (!preg_match('/^[a-zA-Z0-9]+$/', $password)) {
+                $session->setFlashdata('error', 'Password must contain only letters and numbers. No special characters allowed.');
+                return view('auth/login', ['validation' => $this->validator]);
+            }
+
+            // Step 3: Protect SQL (CodeIgniter's query builder uses prepared statements automatically)
+            // The where() and get() methods use parameterized queries internally
             // Check if user exists
             $builder = $db->table('users');
             $user = $builder->where('email', $email)->get()->getRowArray();
 
             if ($user && password_verify($password, $user['password'])) {
+                // Check if user is active
+                if (isset($user['status']) && $user['status'] !== 'active') {
+                    $session->setFlashdata('error', 'Your account is inactive. Please contact an administrator.');
+                    return view('auth/login');
+                }
+
                 // Set session data
                 $session->set([
                     'userID' => $user['id'],
@@ -144,10 +192,27 @@ class Auth extends BaseController
             ],
         ];
 
-        // If admin or teacher, load all courses for dashboard display
+        // If admin or teacher, load courses for dashboard display
         if ($role === 'admin' || $role === 'teacher') {
             $courseModel = new CourseModel();
-            $data['courses'] = $courseModel->findAll();
+            $enrollmentModel = new EnrollmentModel();
+            
+            if ($role === 'teacher') {
+                // For teachers, only load courses assigned to them
+                $userId = $session->get('userID');
+                $data['courses'] = $courseModel->where('instructor_id', $userId)->findAll();
+            } else {
+                // For admin, load all courses
+                $data['courses'] = $courseModel->findAll();
+            }
+            
+            // Get enrolled students count for each course
+            if (!empty($data['courses'])) {
+                foreach ($data['courses'] as &$course) {
+                    $students = $enrollmentModel->getEnrolledStudents($course['id']);
+                    $course['enrolled_count'] = count($students);
+                }
+            }
         }
 
         // If student, load enrolled and available courses for the dashboard

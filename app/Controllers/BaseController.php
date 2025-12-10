@@ -64,7 +64,7 @@ abstract class BaseController extends Controller
      */
     protected function loadNotifications(): array
     {
-        $userId = $this->session->get('user_id');
+        $userId = $this->session->get('userID');
 
         if ($userId) {
             $notificationModel = new NotificationModel();

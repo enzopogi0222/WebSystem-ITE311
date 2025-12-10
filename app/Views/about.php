@@ -19,9 +19,6 @@
                         <a class="nav-link" href="<?= base_url('/') ?>">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="<?= base_url('courses/search') ?>">Courses</a>
-                    </li>
-                    <li class="nav-item">
                         <a class="nav-link" href="<?= base_url('about') ?>">About</a>
                     </li>
                     <li class="nav-item">

@@ -11,11 +11,19 @@ class CourseModel extends Model
 
     protected $allowedFields = [
         'title',
+        'course_code',
+        'year_level',
+        'instructor_id',
         'description',
         'created_at',
         'updated_at',
         'starting_date',
         'end_date',
+        'start_time',
+        'end_time',
         'is_archive',
+        'school_year',
+        'semester',
+        'course_type',
     ];
 }

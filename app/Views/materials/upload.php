@@ -82,11 +82,11 @@
                                        class="form-control form-control-lg" 
                                        id="material_file" 
                                        name="material_file" 
-                                       accept=".pdf,.doc,.docx,.ppt,.pptx,.txt,.jpg,.jpeg,.png"
+                                       accept=".pdf,.ppt,.pptx"
                                        required>
                                 <div class="form-text">
                                     <i class="fas fa-info-circle me-1"></i>
-                                    Allowed file types: PDF, DOC, DOCX, PPT, PPTX, TXT, JPG, JPEG, PNG. Maximum size: 10MB
+                                    Allowed file types: PDF, PPT, PPTX. Maximum size: 10MB
                                 </div>
                             </div>
 

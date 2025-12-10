@@ -86,8 +86,24 @@
         <?php if (!empty($courses) && is_array($courses)): ?>
           <ul class="list-group list-group-flush">
             <?php foreach ($courses as $course): ?>
-              <li class="list-group-item">
-                <i class="bi bi-book me-2 text-success"></i><?= esc($course['title'] ?? 'Course') ?>
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                  <i class="bi bi-book me-2 text-success"></i>
+                  <strong><?= esc($course['title'] ?? 'Course') ?></strong>
+                  <?php if (!empty($course['course_code'])): ?>
+                    <span class="text-muted ms-2">(<?= esc($course['course_code']) ?>)</span>
+                  <?php endif; ?>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                  <span class="badge bg-info">
+                    <i class="bi bi-people me-1"></i><?= esc($course['enrolled_count'] ?? 0) ?> Students
+                  </span>
+                  <?php if (session()->get('role') === 'teacher'): ?>
+                  <a href="<?= base_url('courses/manage/students/' . $course['id']) ?>" class="btn btn-sm btn-outline-success">
+                    <i class="bi bi-eye me-1"></i>View
+                  </a>
+                  <?php endif; ?>
+                </div>
               </li>
             <?php endforeach; ?>
           </ul>

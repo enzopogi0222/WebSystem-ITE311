@@ -22,13 +22,22 @@
             right: 5px;
         }
         .dropdown-menu {
-            max-height: 300px;
+            max-height: 400px;
             overflow-y: auto;
-            width: 320px;
+            width: 350px;
+            padding: 0.5rem;
         }
         .notification-item {
             font-size: 0.9rem;
             word-wrap: break-word;
+            margin-bottom: 0.5rem;
+        }
+        .notification-item:last-child {
+            margin-bottom: 0;
+        }
+        .notification-alert {
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
         }
     </style>
 </head>
@@ -71,11 +80,13 @@
                 <li class="nav-item dropdown me-3" id="notifDropdown">
                      <a class="nav-link dropdown-toggle position-relative" href="#" role="button" data-bs-toggle="dropdown">
                          <i class="bi bi-bell-fill"></i>
-                         <span id="notif-count" class="badge bg-danger"></span>
+                         <span id="notif-count" class="badge bg-danger" style="display: none;">0</span>
                      </a>
                     
                         <ul class="dropdown-menu dropdown-menu-end" id="notif-list">
-                            <li><p class="text-center text-muted m-2">Loading notifications...</p></li>
+                            <li class="dropdown-item-text">
+                                <p class="text-center text-muted m-2 mb-0">Loading notifications...</p>
+                            </li>
                         </ul>
                     </li>
 
@@ -120,17 +131,21 @@ $(document).ready(function() {
                 $("#notif-count").hide();
             }
 
-            // Build list
+            // Build list with Bootstrap alert classes
             let html = '';
             if (data.notifications.length === 0) {
-                html = '<li><p class="text-center text-muted m-2">No new notifications</p></li>';
+                html = '<li class="dropdown-item-text"><p class="text-center text-muted m-2 mb-0">No new notifications</p></li>';
             } else {
                 data.notifications.forEach(n => {
+                    // Use alert-info for unread, alert-secondary for read
+                    const alertClass = n.is_read == 1 ? 'alert-secondary' : 'alert-info';
                     const readClass = n.is_read == 1 ? 'text-muted' : 'fw-bold';
                     html += `
-                        <li class="dropdown-item d-flex justify-content-between align-items-start ${readClass}">
-                            <div class="notification-item text-wrap">${n.message}</div>
-                            ${n.is_read == 0 ? `<button class="btn btn-sm btn-outline-success mark-read" data-id="${n.id}">✓</button>` : ''}
+                        <li class="dropdown-item-text p-0">
+                            <div class="alert ${alertClass} notification-alert d-flex justify-content-between align-items-start mb-0 ${readClass}" role="alert">
+                                <div class="notification-item text-wrap flex-grow-1 me-2">${n.message}</div>
+                                ${n.is_read == 0 ? `<button class="btn btn-sm btn-outline-success mark-read flex-shrink-0" data-id="${n.id}" title="Mark as read">✓</button>` : ''}
+                            </div>
                         </li>
                     `;
                 });
@@ -139,13 +154,19 @@ $(document).ready(function() {
             $("#notif-list").html(html);
         }).fail(function(xhr) {
             console.error("Notification fetch failed:", xhr.responseText);
-            $("#notif-list").html('<li><p class="text-center text-danger m-2">Failed to load notifications</p></li>');
+            $("#notif-list").html('<li class="dropdown-item-text"><div class="alert alert-danger notification-alert mb-0" role="alert"><p class="text-center mb-0">Failed to load notifications</p></div></li>');
         });
     }
 
     // Mark notification as read
-    $(document).on("click", ".mark-read", function() {
+    $(document).on("click", ".mark-read", function(e) {
+        e.preventDefault();
         const id = $(this).data("id");
+        const $button = $(this);
+        
+        // Disable button to prevent double-clicks
+        $button.prop('disabled', true);
+        
         var postData = {};
         postData[window.csrfTokenName] = window.csrfTokenValue;
 
@@ -155,9 +176,17 @@ $(document).ready(function() {
                 window.csrfTokenValue = res.csrf_hash;
             }
 
-            if (res.success) loadNotifications();
+            if (res.success) {
+                // Reload notifications to update the list and badge count
+                loadNotifications();
+            } else {
+                // Re-enable button if failed
+                $button.prop('disabled', false);
+            }
         }).fail(function(xhr) {
             console.error("Mark as read failed:", xhr.responseText);
+            // Re-enable button on error
+            $button.prop('disabled', false);
         });
     });
 

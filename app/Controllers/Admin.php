@@ -76,6 +76,14 @@ class Admin extends BaseController
             return $redirect;
         }
 
+        // Validate ID is numeric to prevent SQL injection
+        if (!is_numeric($id) || (int)$id <= 0) {
+            session()->setFlashdata('error', 'Invalid user ID.');
+            return redirect()->to('/admin/users');
+        }
+
+        $id = (int)$id;
+
         $userModel = new UserModel();
         $user = $userModel->find($id);
 
@@ -93,18 +101,27 @@ class Admin extends BaseController
             return $redirect;
         }
 
+        // Validate ID is numeric to prevent SQL injection
+        if (!is_numeric($id) || (int)$id <= 0) {
+            session()->setFlashdata('error', 'Invalid user ID.');
+            return redirect()->to('/admin/users');
+        }
+
+        $id = (int)$id;
+
         // Base validation rules
         $validationRules = [
             'name'  => 'required|min_length[2]|max_length[100]',
-            'email' => 'required|valid_email',
-            'role'  => 'required|in_list[admin,teacher,student]'
+            'email' => 'required|valid_email|is_unique[users.email,id,' . $id . ']',
+            'role'  => 'required|in_list[admin,teacher,student]',
+            'status' => 'required|in_list[active,inactive]'
         ];
 
         $password = $this->request->getPost('password');
 
         // If admin entered a new password, add rules for it
         if (!empty($password)) {
-            $validationRules['password'] = 'required|min_length[6]';
+            $validationRules['password'] = 'required|min_length[6]|alpha_numeric';
             $validationRules['password_confirm'] = 'required|matches[password]';
         }
 
@@ -118,13 +135,42 @@ class Admin extends BaseController
             ]);
         }
 
+        // Get form data
+        $email = $this->request->getPost('email');
+
+        // Step 1: Validate Email (prevent bad format) - Additional security layer
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            session()->setFlashdata('error', 'Invalid email format.');
+            $userModel = new UserModel();
+            $user = $userModel->find($id);
+            return view('admin/user_edit', [
+                'user' => $user,
+                'validation' => $this->validator,
+            ]);
+        }
+
+        // Step 2: Validate Password (alphanumeric only, no special characters) if provided
+        if (!empty($password)) {
+            if (!preg_match('/^[a-zA-Z0-9]+$/', $password)) {
+                session()->setFlashdata('error', 'Password must contain only letters and numbers. No special characters allowed.');
+                $userModel = new UserModel();
+                $user = $userModel->find($id);
+                return view('admin/user_edit', [
+                    'user' => $user,
+                    'validation' => $this->validator,
+                ]);
+            }
+        }
+
         $userModel = new UserModel();
 
+        // Step 3: Protect SQL (CodeIgniter's Model update() method uses prepared statements automatically)
         $data = [
             'name'  => $this->request->getPost('name'),
-            'email' => $this->request->getPost('email'),
+            'email' => $email,
             // Normalize role to lowercase without extra spaces
             'role'  => strtolower(trim((string) $this->request->getPost('role'))),
+            'status' => strtolower(trim((string) $this->request->getPost('status'))),
         ];
 
         // Only update password if a new one was provided
@@ -143,6 +189,14 @@ class Admin extends BaseController
         if ($redirect = $this->ensureAdmin()) {
             return $redirect;
         }
+
+        // Validate ID is numeric to prevent SQL injection
+        if (!is_numeric($id) || (int)$id <= 0) {
+            session()->setFlashdata('error', 'Invalid user ID.');
+            return redirect()->to('/admin/users');
+        }
+
+        $id = (int)$id;
 
         $userModel = new UserModel();
         $user = $userModel->find($id);

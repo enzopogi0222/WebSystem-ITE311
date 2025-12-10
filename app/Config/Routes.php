@@ -33,16 +33,19 @@ $routes->post('admin/users/role/(:num)', 'Admin::changeRole/$1');
 $routes->get('courses/manage', 'Course::manage');
 $routes->get('courses/manage/create', 'Course::create');
 $routes->post('courses/manage/store', 'Course::store');
+$routes->get('courses/manage/show/(:num)', 'Course::show/$1');
+$routes->get('courses/manage/students/(:num)', 'Course::students/$1');
+$routes->get('courses/manage/remove-student/(:num)/(:num)', 'Course::removeStudent/$1/$2');
+$routes->get('courses/manage/approve-enrollment/(:num)/(:num)', 'Course::approveEnrollment/$1/$2');
+$routes->get('courses/manage/reject-enrollment/(:num)/(:num)', 'Course::rejectEnrollment/$1/$2');
 $routes->get('courses/manage/edit/(:num)', 'Course::edit/$1');
 $routes->post('courses/manage/update/(:num)', 'Course::update/$1');
 $routes->get('courses/manage/delete/(:num)', 'Course::delete/$1');
 $routes->get('courses/manage/archive/(:num)', 'Course::archive/$1');
 $routes->get('courses/manage/restore/(:num)', 'Course::restore/$1');
 
-// Course enrollment and search
+// Course enrollment
 $routes->post('/course/enroll', 'Course::enroll');
-$routes->get('/courses/search', 'Course::search');
-$routes->post('/courses/search', 'Course::search');
 
 $routes->get('/admin/course/(:num)/upload', 'Materials::upload/$1');
 $routes->post('/admin/course/(:num)/upload', 'Materials::upload/$1');

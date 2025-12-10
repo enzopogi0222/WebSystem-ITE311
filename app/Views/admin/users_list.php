@@ -31,6 +31,7 @@
                         <th scope="col">Name</th>
                         <th scope="col">Email</th>
                         <th scope="col">Role</th>
+                        <th scope="col">Status</th>
                         <th scope="col" class="text-end">Actions</th>
                     </tr>
                 </thead>
@@ -69,6 +70,30 @@
                                     <?= esc($label) ?>
                                 </span>
                             </td>
+                            <td>
+                                <?php
+                                    // Normalize status string for display
+                                    $status = strtolower(trim($user['status'] ?? 'active'));
+
+                                    switch ($status) {
+                                        case 'active':
+                                            $statusBadgeClass = 'bg-success';
+                                            $statusLabel = 'Active';
+                                            break;
+                                        case 'inactive':
+                                            $statusBadgeClass = 'bg-danger';
+                                            $statusLabel = 'Inactive';
+                                            break;
+                                        default:
+                                            $statusBadgeClass = 'bg-secondary';
+                                            $statusLabel = 'Unknown';
+                                            break;
+                                    }
+                                ?>
+                                <span class="badge <?= $statusBadgeClass; ?>">
+                                    <?= esc($statusLabel) ?>
+                                </span>
+                            </td>
                             <td class="text-end">
                                 <a href="<?= site_url('admin/users/edit/' . $user['id']) ?>" class="btn btn-sm btn-outline-primary me-1">
                                     <i class="bi bi-pencil-square"></i> Edit
@@ -83,7 +108,7 @@
                     <?php endforeach; ?>
                 <?php else: ?>
                     <tr>
-                        <td colspan="5" class="text-center text-muted">No users found.</td>
+                        <td colspan="6" class="text-center text-muted">No users found.</td>
                     </tr>
                 <?php endif; ?>
                 </tbody>
