@@ -8,6 +8,7 @@
     <!-- Bootstrap + Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -78,7 +79,7 @@
                     
                     <!-- 🔔 Notification Bell -->
                 <li class="nav-item dropdown me-3" id="notifDropdown">
-                     <a class="nav-link dropdown-toggle position-relative" href="#" role="button" data-bs-toggle="dropdown">
+                     <a class="nav-link dropdown-toggle position-relative" href="javascript:void(0);" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                          <i class="bi bi-bell-fill"></i>
                          <span id="notif-count" class="badge bg-danger" style="display: none;">0</span>
                      </a>
@@ -215,4 +216,7 @@ $(document).ready(function() {
     }, 60000);
 });
 </script>
+
+<!-- Bootstrap JS Bundle (required for dropdowns) - Load at end for proper initialization -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 

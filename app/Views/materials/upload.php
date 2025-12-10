@@ -1,30 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload Material</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-</head>
-<body class="bg-light">
-    <nav class="navbar navbar-expand-lg navbar-dark bg-success">
-        <div class="container">
-            <a class="navbar-brand" href="<?= base_url('/dashboard') ?>">
-                <i class="fas fa-graduation-cap me-2"></i>Learning Management System
-            </a>
-            <div class="navbar-nav ms-auto">
-                <span class="navbar-text me-3">
-                    Welcome, <?= esc($user['name']) ?> (<?= ucfirst($user['role']) ?>)
-                </span>
-                <a class="btn btn-outline-light btn-sm" href="<?= base_url('/logout') ?>">
-                    <i class="fas fa-sign-out-alt me-1"></i>Logout
-                </a>
-            </div>
-        </div>
-    </nav>
+<?= $this->include('template/header', ['title' => 'Upload Material']) ?>
 
-    <div class="container mt-4">
+<div class="container mt-4">
         <!-- Breadcrumb Navigation -->
         <nav aria-label="breadcrumb" class="mb-3">
             <ol class="breadcrumb">
@@ -133,9 +109,9 @@
             </div>
         </div>
     </div>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
+<script>
         document.addEventListener('DOMContentLoaded', function() {
             const fileInput = document.getElementById('material_file');
             const uploadBtn = document.getElementById('uploadBtn');
