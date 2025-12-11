@@ -54,6 +54,7 @@
                             </div>
                         <?php endif; ?>
 
+                        
                         <!-- Search Bar for Materials -->
                         <?php if (!empty($materials)): ?>
                         <div class="mb-3">

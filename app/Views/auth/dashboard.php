@@ -171,20 +171,18 @@
         </div>
       </div>
       <div class="card-body">
-        <!-- Search Bar for Teacher Courses -->
         <?php if (!empty($courses) && is_array($courses)): ?>
-        <div class="mb-3">
-          <div class="input-group">
-            <span class="input-group-text"><i class="bi bi-search"></i></span>
-            <input type="text" id="teacherCoursesSearchInput" class="form-control" placeholder="Search courses by title or code...">
-            <button class="btn btn-outline-secondary" type="button" id="clearTeacherCoursesSearch">
-              <i class="bi bi-x"></i> Clear
-            </button>
+          <!-- Search Bar for Your Courses -->
+          <div class="mb-3">
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-search"></i></span>
+              <input type="text" id="teacherCoursesSearchInput" class="form-control" placeholder="Search courses by title or code...">
+              <button class="btn btn-outline-secondary" type="button" id="clearTeacherCoursesSearch">
+                <i class="bi bi-x"></i> Clear
+              </button>
+            </div>
           </div>
-        </div>
-        <?php endif; ?>
-        
-        <?php if (!empty($courses) && is_array($courses)): ?>
+          
           <ul class="list-group list-group-flush" id="teacherCoursesList">
             <?php foreach ($courses as $course): ?>
               <li class="list-group-item d-flex justify-content-between align-items-center teacher-course-item" 
@@ -284,29 +282,39 @@
         <h5 class="mb-0">Your Enrolled Courses</h5>
       </div>
       <div class="card-body">
-        <!-- Search Bar for Enrolled Courses -->
-        <div class="mb-3">
-          <div class="input-group">
-            <span class="input-group-text"><i class="bi bi-search"></i></span>
-            <input type="text" id="enrolledCoursesSearchInput" class="form-control" placeholder="Search enrolled courses...">
-            <button class="btn btn-outline-secondary" type="button" id="clearEnrolledSearch">
-              <i class="bi bi-x"></i> Clear
-            </button>
-          </div>
-        </div>
-        
         <?php if (!empty($enrolledCourses) && is_array($enrolledCourses)): ?>
+          <!-- Search Bar for Enrolled Courses -->
+          <div class="mb-3">
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-search"></i></span>
+              <input type="text" id="enrolledCoursesSearchInput" class="form-control" placeholder="Search enrolled courses by title or date...">
+              <button class="btn btn-outline-secondary" type="button" id="clearEnrolledCoursesSearch">
+                <i class="bi bi-x"></i> Clear
+              </button>
+            </div>
+          </div>
+          
           <ul class="list-group list-group-flush mb-3" id="enrolledCoursesList">
             <?php foreach ($enrolledCourses as $e): ?>
               <li class="list-group-item d-flex justify-content-between align-items-center enrolled-course-item" 
                   data-title="<?= strtolower(esc($e['title'] ?? '')) ?>"
                   data-date="<?= strtolower(esc($e['enrollment_date'] ?? '')) ?>">
-                <span><i class="bi bi-bookmark-check me-2 text-info"></i><?= esc($e['title'] ?? 'Untitled Course') ?></span>
-                <small class="text-muted"><?= esc($e['enrollment_date'] ?? '') ?></small>
+                <div class="d-flex align-items-center">
+                  <i class="bi bi-bookmark-check me-2 text-info"></i>
+                  <span><?= esc($e['title'] ?? 'Untitled Course') ?></span>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                  <small class="text-muted"><?= esc($e['enrollment_date'] ?? '') ?></small>
+                  <a href="<?= base_url('/courses/manage/show/' . ($e['course_id'] ?? $e['id'] ?? '')) ?>" 
+                     class="btn btn-sm btn-outline-success" 
+                     title="View Course Details">
+                    <i class="bi bi-eye me-1"></i>View
+                  </a>
+                </div>
               </li>
             <?php endforeach; ?>
           </ul>
-          <div id="noEnrolledResults" class="text-center text-muted py-3" style="display: none;">
+          <div id="noEnrolledCoursesResults" class="text-center text-muted py-3" style="display: none;">
             <i class="bi bi-search"></i> No enrolled courses found matching your search.
           </div>
         <?php else: ?>
@@ -314,33 +322,35 @@
         <?php endif; ?>
 
         <h6 class="fw-bold">Available Courses</h6>
-        <!-- Search Bar for Available Courses -->
-        <div class="mb-3">
-          <div class="input-group">
-            <span class="input-group-text"><i class="bi bi-search"></i></span>
-            <input type="text" id="availableCoursesSearchInput" class="form-control" placeholder="Search available courses...">
-            <button class="btn btn-outline-secondary" type="button" id="clearAvailableSearch">
-              <i class="bi bi-x"></i> Clear
-            </button>
-          </div>
-        </div>
         
         <?php if (!empty($availableCourses) && is_array($availableCourses)): ?>
+          <!-- Search Bar for Available Courses -->
+          <div class="mb-3">
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-search"></i></span>
+              <input type="text" id="availableCoursesSearchInput" class="form-control" placeholder="Search available courses by title...">
+              <button class="btn btn-outline-secondary" type="button" id="clearAvailableCoursesSearch">
+                <i class="bi bi-x"></i> Clear
+              </button>
+            </div>
+          </div>
+          
           <div id="available-courses" class="list-group">
             <?php foreach ($availableCourses as $course): ?>
               <div class="list-group-item d-flex justify-content-between align-items-center available-course-item" 
                    id="course-<?= $course['id'] ?>"
-                   data-title="<?= strtolower(esc($course['title'] ?? '')) ?>">
+                   data-title="<?= strtolower(esc($course['title'] ?? '')) ?>"
+                   style="display: flex;">
                 <span><i class="bi bi-journal-plus me-2 text-success"></i><?= esc($course['title']) ?></span>
                 <button class="btn btn-success btn-sm btn-enroll" data-course-id="<?= esc($course['id']) ?>" data-title="<?= esc($course['title']) ?>">Enroll</button>
               </div>
             <?php endforeach; ?>
           </div>
-          <div id="noAvailableResults" class="text-center text-muted py-3" style="display: none;">
+          <div id="noAvailableCoursesResults" class="text-center text-muted py-3" style="display: none;">
             <i class="bi bi-search"></i> No available courses found matching your search.
           </div>
         <?php else: ?>
-          <p class="text-muted">No available courses at the moment.</p>
+          <p class="text-muted" id="noAvailableCoursesMessage">No available courses at the moment.</p>
         <?php endif; ?>
       </div>
     </div>
@@ -404,31 +414,33 @@ window.csrfTokenValue = window.csrfTokenValue || '<?= csrf_hash() ?>';
 $(document).ready(function() {
     // Materials Search Functionality (Admin)
     $('#materialsSearchInput').on('keyup', function() {
-        var value = $(this).val().toLowerCase();
-        var hasResults = false;
+        var value = $(this).val().toLowerCase().trim();
         
+        // Show/hide clear button
+        if (value.length > 0) {
+            $('#clearMaterialsSearch').show();
+        } else {
+            $('#clearMaterialsSearch').hide();
+            $('#noMaterialsResults').hide();
+            $('.course-item').show();
+            return;
+        }
+        
+        // Filter course items - check entire text content
         $('.course-item').each(function() {
-            var title = $(this).data('title') || '';
-            var code = $(this).data('code') || '';
-            var searchText = title + ' ' + code;
-            
-            if (searchText.indexOf(value) > -1) {
+            var itemText = $(this).text().toLowerCase();
+            if (itemText.indexOf(value) > -1) {
                 $(this).show();
-                hasResults = true;
             } else {
                 $(this).hide();
             }
         });
         
-        if (value.length > 0) {
-            $('#clearMaterialsSearch').show();
-            if (hasResults) {
-                $('#noMaterialsResults').hide();
-            } else {
-                $('#noMaterialsResults').show();
-            }
+        // Show message if no results
+        var visibleItems = $('.course-item:visible').length;
+        if (visibleItems === 0) {
+            $('#noMaterialsResults').show();
         } else {
-            $('#clearMaterialsSearch').hide();
             $('#noMaterialsResults').hide();
         }
     });
@@ -440,105 +452,35 @@ $(document).ready(function() {
         $(this).hide();
     });
     
-    // Student: Enrolled Courses Search
-    $('#enrolledCoursesSearchInput').on('keyup', function() {
-        var value = $(this).val().toLowerCase();
-        var hasResults = false;
-        
-        $('.enrolled-course-item').each(function() {
-            var title = $(this).data('title') || '';
-            var date = $(this).data('date') || '';
-            var searchText = title + ' ' + date;
-            
-            if (searchText.indexOf(value) > -1) {
-                $(this).show();
-                hasResults = true;
-            } else {
-                $(this).hide();
-            }
-        });
-        
-        if (value.length > 0) {
-            $('#clearEnrolledSearch').show();
-            if (hasResults) {
-                $('#noEnrolledResults').hide();
-            } else {
-                $('#noEnrolledResults').show();
-            }
-        } else {
-            $('#clearEnrolledSearch').hide();
-            $('#noEnrolledResults').hide();
-        }
-    });
-    
-    $('#clearEnrolledSearch').on('click', function() {
-        $('#enrolledCoursesSearchInput').val('');
-        $('.enrolled-course-item').show();
-        $('#noEnrolledResults').hide();
-        $(this).hide();
-    });
-    
-    // Student: Available Courses Search
-    $('#availableCoursesSearchInput').on('keyup', function() {
-        var value = $(this).val().toLowerCase();
-        var hasResults = false;
-        
-        $('.available-course-item').each(function() {
-            var title = $(this).data('title') || '';
-            
-            if (title.indexOf(value) > -1) {
-                $(this).show();
-                hasResults = true;
-            } else {
-                $(this).hide();
-            }
-        });
-        
-        if (value.length > 0) {
-            $('#clearAvailableSearch').show();
-            if (hasResults) {
-                $('#noAvailableResults').hide();
-            } else {
-                $('#noAvailableResults').show();
-            }
-        } else {
-            $('#clearAvailableSearch').hide();
-            $('#noAvailableResults').hide();
-        }
-    });
-    
-    $('#clearAvailableSearch').on('click', function() {
-        $('#availableCoursesSearchInput').val('');
-        $('.available-course-item').show();
-        $('#noAvailableResults').hide();
-        $(this).hide();
-    });
-    
     // Student: Course Materials Search
     $('#studentMaterialsSearchInput').on('keyup', function() {
-        var value = $(this).val().toLowerCase();
-        var hasResults = false;
+        var value = $(this).val().toLowerCase().trim();
         
+        // Show/hide clear button
+        if (value.length > 0) {
+            $('#clearStudentMaterialsSearch').show();
+        } else {
+            $('#clearStudentMaterialsSearch').hide();
+            $('#noStudentMaterialsResults').hide();
+            $('.student-material-item').show();
+            return;
+        }
+        
+        // Filter material items - check entire text content
         $('.student-material-item').each(function() {
-            var title = $(this).data('title') || '';
-            
-            if (title.indexOf(value) > -1) {
+            var itemText = $(this).text().toLowerCase();
+            if (itemText.indexOf(value) > -1) {
                 $(this).show();
-                hasResults = true;
             } else {
                 $(this).hide();
             }
         });
         
-        if (value.length > 0) {
-            $('#clearStudentMaterialsSearch').show();
-            if (hasResults) {
-                $('#noStudentMaterialsResults').hide();
-            } else {
-                $('#noStudentMaterialsResults').show();
-            }
+        // Show message if no results
+        var visibleItems = $('.student-material-item:visible').length;
+        if (visibleItems === 0) {
+            $('#noStudentMaterialsResults').show();
         } else {
-            $('#clearStudentMaterialsSearch').hide();
             $('#noStudentMaterialsResults').hide();
         }
     });
@@ -550,74 +492,40 @@ $(document).ready(function() {
         $(this).hide();
     });
     
-    // Teacher: Courses Search
-    $('#teacherCoursesSearchInput').on('keyup', function() {
-        var value = $(this).val().toLowerCase();
-        var hasResults = false;
-        
-        $('.teacher-course-item').each(function() {
-            var title = $(this).data('title') || '';
-            var code = $(this).data('code') || '';
-            var searchText = title + ' ' + code;
-            
-            if (searchText.indexOf(value) > -1) {
-                $(this).show();
-                hasResults = true;
-            } else {
-                $(this).hide();
-            }
-        });
-        
-        if (value.length > 0) {
-            $('#clearTeacherCoursesSearch').show();
-            if (hasResults) {
-                $('#noTeacherCoursesResults').hide();
-            } else {
-                $('#noTeacherCoursesResults').show();
-            }
-        } else {
-            $('#clearTeacherCoursesSearch').hide();
-            $('#noTeacherCoursesResults').hide();
-        }
-    });
-    
-    $('#clearTeacherCoursesSearch').on('click', function() {
-        $('#teacherCoursesSearchInput').val('');
-        $('.teacher-course-item').show();
-        $('#noTeacherCoursesResults').hide();
-        $(this).hide();
-    });
-    
     // Teacher: Materials Search
-    $('#teacherMaterialsSearchInput').on('keyup', function() {
-        var value = $(this).val().toLowerCase();
-        var hasResults = false;
+    function filterTeacherMaterials() {
+        var value = $('#teacherMaterialsSearchInput').val().toLowerCase().trim();
         
-        $('.teacher-material-item').each(function() {
-            var title = $(this).data('title') || '';
-            var code = $(this).data('code') || '';
-            var searchText = title + ' ' + code;
-            
-            if (searchText.indexOf(value) > -1) {
-                $(this).show();
-                hasResults = true;
-            } else {
-                $(this).hide();
-            }
-        });
-        
+        // Show/hide clear button
         if (value.length > 0) {
             $('#clearTeacherMaterialsSearch').show();
-            if (hasResults) {
-                $('#noTeacherMaterialsResults').hide();
-            } else {
-                $('#noTeacherMaterialsResults').show();
-            }
         } else {
             $('#clearTeacherMaterialsSearch').hide();
             $('#noTeacherMaterialsResults').hide();
+            $('.teacher-material-item').show();
+            return;
         }
-    });
+        
+        // Filter material items - check entire text content
+        $('.teacher-material-item').each(function() {
+            var itemText = $(this).text().toLowerCase();
+            if (itemText.indexOf(value) > -1) {
+                $(this).show();
+            } else {
+                $(this).hide();
+            }
+        });
+        
+        // Show message if no results
+        var visibleItems = $('.teacher-material-item:visible').length;
+        if (visibleItems === 0) {
+            $('#noTeacherMaterialsResults').show();
+        } else {
+            $('#noTeacherMaterialsResults').hide();
+        }
+    }
+    
+    $('#teacherMaterialsSearchInput').on('keyup input', filterTeacherMaterials);
     
     $('#clearTeacherMaterialsSearch').on('click', function() {
         $('#teacherMaterialsSearchInput').val('');
@@ -626,13 +534,172 @@ $(document).ready(function() {
         $(this).hide();
     });
     
+    // Teacher: Your Courses Search
+    $('#teacherCoursesSearchInput').on('keyup input paste', function() {
+        var value = $(this).val().toLowerCase().trim();
+        var hasResults = false;
+        var $items = $('.teacher-course-item');
+        
+        // Show/hide clear button
+        if (value.length > 0) {
+            $('#clearTeacherCoursesSearch').show();
+            
+            // Filter course items - only show matching items, explicitly hide others
+            $items.each(function() {
+                var $item = $(this);
+                var itemText = $item.text().toLowerCase();
+                
+                if (itemText.indexOf(value) > -1) {
+                    $item[0].style.setProperty('display', 'flex', 'important');
+                    hasResults = true;
+                } else {
+                    $item[0].style.setProperty('display', 'none', 'important');
+                }
+            });
+            
+            // Show message if no results
+            if (hasResults) {
+                $('#noTeacherCoursesResults').hide();
+            } else {
+                $('#noTeacherCoursesResults').show();
+            }
+        } else {
+            $('#clearTeacherCoursesSearch').hide();
+            $('#noTeacherCoursesResults').hide();
+            $items.each(function() {
+                $(this)[0].style.setProperty('display', 'flex', 'important');
+            });
+        }
+    });
+    
+    $('#clearTeacherCoursesSearch').on('click', function() {
+        $('#teacherCoursesSearchInput').val('');
+        $('.teacher-course-item').each(function() {
+            $(this)[0].style.setProperty('display', 'flex', 'important');
+        });
+        $('#noTeacherCoursesResults').hide();
+        $(this).hide();
+    });
+    
+    // Student: Enrolled Courses Search
+    $('#enrolledCoursesSearchInput').on('keyup input paste', function() {
+        var value = $(this).val().toLowerCase().trim();
+        var hasResults = false;
+        var $items = $('.enrolled-course-item');
+        
+        // Show/hide clear button
+        if (value.length > 0) {
+            $('#clearEnrolledCoursesSearch').show();
+            
+            // Filter enrolled course items - only show matching items, explicitly hide others
+            $items.each(function() {
+                var $item = $(this);
+                var itemText = $item.text().toLowerCase();
+                
+                if (itemText.indexOf(value) > -1) {
+                    $item[0].style.setProperty('display', 'flex', 'important');
+                    hasResults = true;
+                } else {
+                    $item[0].style.setProperty('display', 'none', 'important');
+                }
+            });
+            
+            // Show message if no results
+            if (hasResults) {
+                $('#noEnrolledCoursesResults').hide();
+            } else {
+                $('#noEnrolledCoursesResults').show();
+            }
+        } else {
+            $('#clearEnrolledCoursesSearch').hide();
+            $('#noEnrolledCoursesResults').hide();
+            $items.each(function() {
+                $(this)[0].style.setProperty('display', 'flex', 'important');
+            });
+        }
+    });
+    
+    $('#clearEnrolledCoursesSearch').on('click', function() {
+        $('#enrolledCoursesSearchInput').val('');
+        $('.enrolled-course-item').each(function() {
+            $(this)[0].style.setProperty('display', 'flex', 'important');
+        });
+        $('#noEnrolledCoursesResults').hide();
+        $(this).hide();
+    });
+    
+    // Student: Available Courses Search
+    function filterAvailableCourses() {
+        var value = $('#availableCoursesSearchInput').val().toLowerCase().trim();
+        var hasResults = false;
+        var $items = $('#available-courses .available-course-item');
+        
+        // Show/hide clear button
+        if (value.length > 0) {
+            $('#clearAvailableCoursesSearch').show();
+            
+            // Filter available course items - only show matching items, explicitly hide others
+            $items.each(function() {
+                var $item = $(this);
+                var itemText = $item.text().toLowerCase();
+                var element = this;
+                
+                // Get all text including button text
+                var allText = $item.find('*').addBack().text().toLowerCase();
+                
+                if (allText.indexOf(value) > -1 || itemText.indexOf(value) > -1) {
+                    // Show item - completely reset styles
+                    element.style.cssText = '';
+                    element.style.setProperty('display', 'flex', 'important');
+                    element.style.setProperty('visibility', 'visible', 'important');
+                    element.style.setProperty('opacity', '1', 'important');
+                    element.style.setProperty('height', 'auto', 'important');
+                    element.style.setProperty('margin', '', 'important');
+                    element.style.setProperty('padding', '', 'important');
+                    $item.removeClass('d-none').removeAttr('hidden');
+                    hasResults = true;
+                } else {
+                    // Hide item - use cssText to override everything
+                    element.style.cssText = 'display: none !important; visibility: hidden !important; opacity: 0 !important; height: 0 !important; overflow: hidden !important; margin: 0 !important; padding: 0 !important; border: none !important;';
+                    $item.addClass('d-none').attr('hidden', 'hidden');
+                }
+            });
+            
+            // Show message if no results
+            if (hasResults) {
+                $('#noAvailableCoursesResults').hide();
+            } else {
+                $('#noAvailableCoursesResults').show();
+            }
+        } else {
+            $('#clearAvailableCoursesSearch').hide();
+            $('#noAvailableCoursesResults').hide();
+            $items.each(function() {
+                var element = this;
+                element.style.cssText = '';
+                element.style.setProperty('display', 'flex', 'important');
+                $(this).removeClass('d-none').removeAttr('hidden');
+            });
+        }
+    }
+    
+    $('#availableCoursesSearchInput').on('keyup input paste change', function() {
+        filterAvailableCourses();
+    });
+    
+    $('#clearAvailableCoursesSearch').on('click', function() {
+        $('#availableCoursesSearchInput').val('');
+        filterAvailableCourses();
+        $(this).hide();
+    });
+    
     // Hide clear buttons initially
     $('#clearMaterialsSearch').hide();
-    $('#clearEnrolledSearch').hide();
-    $('#clearAvailableSearch').hide();
     $('#clearStudentMaterialsSearch').hide();
-    $('#clearTeacherCoursesSearch').hide();
     $('#clearTeacherMaterialsSearch').hide();
+    $('#clearTeacherCoursesSearch').hide();
+    $('#clearEnrolledCoursesSearch').hide();
+    $('#clearAvailableCoursesSearch').hide();
     
     $('.btn-enroll').on('click', function() {
         var courseId = $(this).data('course-id');
@@ -673,10 +740,22 @@ $(document).ready(function() {
                 }
 
                 var currentDate = new Date().toLocaleDateString();
+                var titleLower = title.toLowerCase();
+                var dateLower = currentDate.toLowerCase();
                 enrolledUl.append(
-                    '<li class="list-group-item d-flex justify-content-between align-items-center">'
-                    + '<span><i class="bi bi-bookmark-check me-2 text-info"></i>' + title + '</span>'
+                    '<li class="list-group-item d-flex justify-content-between align-items-center enrolled-course-item" '
+                    + 'data-title="' + titleLower + '" '
+                    + 'data-date="' + dateLower + '">'
+                    + '<div class="d-flex align-items-center">'
+                    + '<i class="bi bi-bookmark-check me-2 text-info"></i>'
+                    + '<span>' + title + '</span>'
+                    + '</div>'
+                    + '<div class="d-flex align-items-center gap-2">'
                     + '<small class="text-muted">' + currentDate + '</small>'
+                    + '<a href="/courses/manage/show/' + courseId + '" class="btn btn-sm btn-outline-success" title="View Course Details">'
+                    + '<i class="bi bi-eye me-1"></i>View'
+                    + '</a>'
+                    + '</div>'
                     + '</li>'
                 );
 

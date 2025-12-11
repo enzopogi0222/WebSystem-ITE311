@@ -264,8 +264,19 @@ class Course extends BaseController
 
     public function show($id)
     {
-        if ($redirect = $this->ensureCourseManager()) {
-            return $redirect;
+        // Check if user is logged in
+        if (!session()->get('isLoggedIn')) {
+            session()->setFlashdata('error', 'Please login to access this page.');
+            return redirect()->to(base_url('/login'));
+        }
+
+        $role = session()->get('role');
+        
+        // For admin and teacher, use the course manager check
+        if (in_array($role, ['admin', 'teacher'])) {
+            if ($redirect = $this->ensureCourseManager()) {
+                return $redirect;
+            }
         }
 
         $courseModel = new CourseModel();
@@ -273,13 +284,29 @@ class Course extends BaseController
 
         if (! $course) {
             session()->setFlashdata('error', 'Course not found.');
+            if ($role === 'student') {
+                return redirect()->to('/dashboard');
+            }
             return redirect()->to('/courses/manage');
         }
 
-        // Check if teacher can access this course
-        if (!$this->canAccessCourse($course)) {
-            session()->setFlashdata('error', 'You do not have permission to access this course.');
-            return redirect()->to('/courses/manage');
+        // Check permissions based on role
+        if ($role === 'student') {
+            // Students can only view courses they're enrolled in
+            $enrollmentModel = new EnrollmentModel();
+            $userId = session()->get('userID');
+            $isEnrolled = $enrollmentModel->isAlreadyEnrolled($userId, $id);
+            
+            if (!$isEnrolled) {
+                session()->setFlashdata('error', 'You must be enrolled in this course to view it.');
+                return redirect()->to('/dashboard');
+            }
+        } elseif (in_array($role, ['admin', 'teacher'])) {
+            // Check if teacher can access this course
+            if (!$this->canAccessCourse($course)) {
+                session()->setFlashdata('error', 'You do not have permission to access this course.');
+                return redirect()->to('/courses/manage');
+            }
         }
 
         // Get instructor name for display
